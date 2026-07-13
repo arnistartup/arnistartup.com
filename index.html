@@ -1,0 +1,697 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Arni Startup — Handmade with Heart</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --pink: #FF6B9D;
+    --yellow: #FFD93D;
+    --purple: #A855F7;
+    --teal: #06B6D4;
+    --orange: #FF8C42;
+    --green: #22C55E;
+    --bg: #FFF8F0;
+    --text: #2D1B4E;
+    --card-radius: 24px;
+  }
+
+  body {
+    font-family: 'Nunito', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* NAV */
+  nav {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1.2rem 2.5rem;
+    background: white;
+    border-bottom: 3px dashed #FFD93D;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .nav-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.8rem;
+    color: var(--purple);
+    letter-spacing: 1px;
+  }
+  .nav-logo span { color: var(--pink); }
+  .nav-links { display: flex; gap: 2rem; list-style: none; }
+  .nav-links a {
+    text-decoration: none;
+    font-weight: 700;
+    color: var(--text);
+    font-size: 1rem;
+    transition: color 0.2s;
+  }
+  .nav-links a:hover { color: var(--purple); }
+
+  /* HERO */
+  .hero {
+    min-height: 90vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    text-align: center;
+    padding: 4rem 2rem;
+    position: relative;
+    background: linear-gradient(160deg, #FFF0FA 0%, #F0F0FF 50%, #F0FFF8 100%);
+    overflow: hidden;
+  }
+
+  /* Floating decorative shapes */
+  .shape {
+    position: absolute;
+    border-radius: 50%;
+    opacity: 0.18;
+    animation: float 6s ease-in-out infinite;
+  }
+  .s1 { width: 180px; height: 180px; background: var(--pink); top: 5%; left: 5%; animation-delay: 0s; }
+  .s2 { width: 120px; height: 120px; background: var(--yellow); top: 15%; right: 8%; animation-delay: 1s; }
+  .s3 { width: 90px; height: 90px; background: var(--teal); bottom: 20%; left: 10%; animation-delay: 2s; }
+  .s4 { width: 150px; height: 150px; background: var(--purple); bottom: 10%; right: 5%; animation-delay: 0.5s; }
+  .s5 { width: 70px; height: 70px; background: var(--orange); top: 50%; left: 2%; animation-delay: 1.5s; }
+
+  @keyframes float {
+    0%, 100% { transform: translateY(0px); }
+    50% { transform: translateY(-20px); }
+  }
+
+  .hero-badge {
+    background: var(--yellow);
+    color: #7A5500;
+    font-weight: 800;
+    font-size: 0.85rem;
+    padding: 0.4rem 1.2rem;
+    border-radius: 100px;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 1.2rem;
+    display: inline-block;
+  }
+
+  .hero h1 {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(3rem, 8vw, 5.5rem);
+    line-height: 1.05;
+    margin-bottom: 1rem;
+    background: linear-gradient(135deg, var(--purple), var(--pink));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .hero p {
+    font-size: 1.25rem;
+    color: #6B5580;
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 2.5rem;
+    font-weight: 600;
+  }
+
+  .hero-btns { display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; }
+
+  .btn-primary {
+    background: var(--purple);
+    color: white;
+    padding: 0.9rem 2.2rem;
+    border-radius: 100px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    text-decoration: none;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(168,85,247,0.35);
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(168,85,247,0.45); }
+
+  .btn-secondary {
+    background: white;
+    color: var(--purple);
+    padding: 0.9rem 2.2rem;
+    border-radius: 100px;
+    font-weight: 800;
+    font-size: 1.05rem;
+    text-decoration: none;
+    border: 2.5px solid var(--purple);
+    cursor: pointer;
+    transition: transform 0.15s, background 0.15s;
+    font-family: 'Nunito', sans-serif;
+  }
+  .btn-secondary:hover { background: #F5EEFF; transform: translateY(-2px); }
+
+  /* FOUNDERS */
+  .section { padding: 5rem 2rem; max-width: 1100px; margin: 0 auto; }
+
+  .section-label {
+    font-size: 0.8rem;
+    font-weight: 800;
+    letter-spacing: 2.5px;
+    text-transform: uppercase;
+    color: var(--pink);
+    margin-bottom: 0.6rem;
+    display: block;
+  }
+  .section-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2rem, 5vw, 2.8rem);
+    color: var(--text);
+    margin-bottom: 1rem;
+  }
+  .section-sub {
+    font-size: 1.1rem;
+    color: #6B5580;
+    max-width: 540px;
+    line-height: 1.7;
+    margin-bottom: 3rem;
+  }
+
+  .founders-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+
+  .founder-card {
+    background: white;
+    border-radius: var(--card-radius);
+    padding: 2.5rem 2rem;
+    text-align: center;
+    border: 2.5px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+  .founder-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 6px;
+  }
+  .founder-card.arjun { border-color: #E9D5FF; }
+  .founder-card.arjun::before { background: linear-gradient(90deg, var(--purple), var(--teal)); }
+  .founder-card.niya { border-color: #FFD6E8; }
+  .founder-card.niya::before { background: linear-gradient(90deg, var(--pink), var(--orange)); }
+  .founder-card:hover { transform: translateY(-6px); }
+
+  .founder-avatar {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin: 0 auto 1.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.8rem;
+    font-weight: 800;
+  }
+  .arjun .founder-avatar { background: #EDE9FE; }
+  .niya .founder-avatar { background: #FFE4F0; }
+
+  .founder-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.7rem;
+    margin-bottom: 0.3rem;
+  }
+  .arjun .founder-name { color: var(--purple); }
+  .niya .founder-name { color: var(--pink); }
+
+  .founder-role {
+    font-size: 0.85rem;
+    font-weight: 800;
+    letter-spacing: 1.5px;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+  }
+  .arjun .founder-role { color: var(--teal); }
+  .niya .founder-role { color: var(--orange); }
+
+  .founder-bio {
+    font-size: 0.97rem;
+    color: #6B5580;
+    line-height: 1.75;
+  }
+
+  /* PRODUCTS */
+  .products-section {
+    background: white;
+    padding: 5rem 0;
+  }
+  .products-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+  .products-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .product-card {
+    border-radius: var(--card-radius);
+    padding: 2rem 1.5rem;
+    text-align: center;
+    transition: transform 0.2s;
+    border: 2px solid transparent;
+  }
+  .product-card:hover { transform: translateY(-5px) rotate(1deg); }
+
+  .p1 { background: #FFF0FA; border-color: #FFCCE8; }
+  .p2 { background: #F0F0FF; border-color: #D8D0FF; }
+  .p3 { background: #FFFBEA; border-color: #FFE88A; }
+
+  .product-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    display: block;
+    line-height: 1;
+  }
+
+  .product-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    margin-bottom: 0.5rem;
+  }
+  .p1 .product-name { color: var(--pink); }
+  .p2 .product-name { color: var(--purple); }
+  .p3 .product-name { color: #B8860B; }
+
+  .product-desc {
+    font-size: 0.95rem;
+    color: #6B5580;
+    line-height: 1.65;
+  }
+
+  /* STATS */
+  .stats-strip {
+    background: var(--purple);
+    padding: 3rem 2rem;
+  }
+  .stats-inner {
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
+    text-align: center;
+  }
+  .stat-num {
+    font-family: 'Fredoka One', cursive;
+    font-size: 3rem;
+    color: var(--yellow);
+    display: block;
+    line-height: 1;
+  }
+  .stat-label {
+    font-size: 0.9rem;
+    color: #E9D5FF;
+    font-weight: 700;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 0.4rem;
+    display: block;
+  }
+
+  /* WHY ARNI */
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+  .why-card {
+    background: white;
+    border-radius: 18px;
+    padding: 1.8rem 1.5rem;
+    border: 2px solid #F0E8FF;
+    display: flex;
+    gap: 1rem;
+    align-items: flex-start;
+  }
+  .why-icon {
+    font-size: 2rem;
+    flex-shrink: 0;
+    width: 52px;
+    height: 52px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .wi1 { background: #FFF0FA; }
+  .wi2 { background: #F0F0FF; }
+  .wi3 { background: #FFFBEA; }
+  .wi4 { background: #F0FFF8; }
+
+  .why-text h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.2rem;
+    color: var(--text);
+    margin-bottom: 0.35rem;
+  }
+  .why-text p {
+    font-size: 0.9rem;
+    color: #6B5580;
+    line-height: 1.65;
+  }
+
+  /* ORDER SECTION */
+  .order-section {
+    background: linear-gradient(135deg, #7C3AED, #A855F7, #EC4899);
+    padding: 6rem 2rem;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .order-section::before {
+    content: '🎀 ✨ 📌 💜 🎨';
+    position: absolute;
+    top: 1rem;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.8rem;
+    opacity: 0.25;
+    white-space: nowrap;
+    letter-spacing: 2rem;
+  }
+
+  .order-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: clamp(2.2rem, 6vw, 3.5rem);
+    color: white;
+    margin-bottom: 1rem;
+  }
+  .order-sub {
+    font-size: 1.15rem;
+    color: #F3E8FF;
+    max-width: 520px;
+    margin: 0 auto 2.5rem;
+    line-height: 1.7;
+  }
+
+  .order-card {
+    background: white;
+    border-radius: 24px;
+    padding: 3rem 2.5rem;
+    max-width: 520px;
+    margin: 0 auto;
+    text-align: left;
+  }
+  .order-card h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.5rem;
+    color: var(--purple);
+    margin-bottom: 0.5rem;
+  }
+  .order-card p {
+    font-size: 0.95rem;
+    color: #6B5580;
+    margin-bottom: 1.8rem;
+    line-height: 1.6;
+  }
+
+  .email-link-box {
+    background: #F5EEFF;
+    border: 2px dashed #C084FC;
+    border-radius: 14px;
+    padding: 1.2rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-bottom: 1.5rem;
+  }
+  .email-address {
+    font-weight: 800;
+    color: var(--purple);
+    font-size: 1rem;
+    font-family: monospace;
+  }
+  .copy-btn {
+    background: var(--purple);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-family: 'Nunito', sans-serif;
+    transition: background 0.2s;
+    flex-shrink: 0;
+  }
+  .copy-btn:hover { background: #7C3AED; }
+
+  .order-info-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .order-info-list li {
+    font-size: 0.9rem;
+    color: #6B5580;
+    display: flex;
+    gap: 0.6rem;
+    align-items: flex-start;
+    line-height: 1.5;
+  }
+  .order-info-list li::before {
+    content: '✅';
+    flex-shrink: 0;
+  }
+
+  /* FOOTER */
+  footer {
+    background: var(--text);
+    color: white;
+    text-align: center;
+    padding: 3rem 2rem;
+  }
+  footer .footer-logo {
+    font-family: 'Fredoka One', cursive;
+    font-size: 2rem;
+    color: var(--yellow);
+    margin-bottom: 0.5rem;
+  }
+  footer p {
+    color: #C4B5E8;
+    font-size: 0.9rem;
+    margin-top: 0.4rem;
+    line-height: 1.7;
+  }
+  footer a {
+    color: var(--yellow);
+    text-decoration: none;
+    font-weight: 700;
+  }
+  footer a:hover { text-decoration: underline; }
+  .footer-hearts {
+    font-size: 1.5rem;
+    margin: 1rem 0;
+    letter-spacing: 0.4rem;
+  }
+
+  @media (max-width: 640px) {
+    nav { padding: 1rem 1.2rem; }
+    .nav-links { display: none; }
+    .founders-grid, .products-grid, .why-grid { grid-template-columns: 1fr; }
+    .stats-inner { flex-direction: column; gap: 1.5rem; }
+  }
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">Arni<span>★</span></div>
+  <ul class="nav-links">
+    <li><a href="#about">About us</a></li>
+    <li><a href="#products">What we make</a></li>
+    <li><a href="#order">Order</a></li>
+  </ul>
+  <a href="#order" class="btn-primary" style="padding: 0.65rem 1.5rem; font-size: 0.95rem;">Order now</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="shape s1"></div>
+  <div class="shape s2"></div>
+  <div class="shape s3"></div>
+  <div class="shape s4"></div>
+  <div class="shape s5"></div>
+
+  <span class="hero-badge">☀️ Summer Startup 2024</span>
+  <h1>Handmade<br>with Heart</h1>
+  <p>We're Arjun &amp; Niya — two young creators making colourful badge pins, magnets, bracelets, and earrings, one piece at a time. Every item is crafted by hand, with love.</p>
+  <div class="hero-btns">
+    <a href="#order" class="btn-primary">Place a bulk order</a>
+    <a href="#products" class="btn-secondary">See what we make</a>
+  </div>
+</section>
+
+<!-- FOUNDERS -->
+<section id="about" class="section">
+  <span class="section-label">Who we are</span>
+  <h2 class="section-title">Meet the founders ✨</h2>
+  <p class="section-sub">Two siblings, one big dream. We started Arni Startup this summer to share our love for crafting with the world!</p>
+
+  <div class="founders-grid">
+    <div class="founder-card arjun">
+      <div class="founder-avatar">🎨</div>
+      <div class="founder-name">Arjun</div>
+      <div class="founder-role">Co-Founder · Age 8</div>
+      <p class="founder-bio">Arjun is the creative director of Arni Startup! He loves designing bold, colourful badge pins and magnets. His favourite part of the job is coming up with brand-new designs and seeing people smile when they wear them.</p>
+    </div>
+    <div class="founder-card niya">
+      <div class="founder-avatar">💜</div>
+      <div class="founder-name">Niya</div>
+      <div class="founder-role">Co-Founder · Age 7</div>
+      <p class="founder-bio">Niya is the jewellery queen of Arni Startup! She handcrafts every bracelet and pair of earrings with care and patience. She believes every piece should make the person wearing it feel extra special and beautiful.</p>
+    </div>
+  </div>
+</section>
+
+<!-- STATS STRIP -->
+<div class="stats-strip">
+  <div class="stats-inner">
+    <div>
+      <span class="stat-num">100%</span>
+      <span class="stat-label">Handmade</span>
+    </div>
+    <div>
+      <span class="stat-num">3</span>
+      <span class="stat-label">Product lines</span>
+    </div>
+    <div>
+      <span class="stat-num">2</span>
+      <span class="stat-label">Kid founders</span>
+    </div>
+    <div>
+      <span class="stat-num">❤️</span>
+      <span class="stat-label">Made with love</span>
+    </div>
+  </div>
+</div>
+
+<!-- PRODUCTS -->
+<section id="products" class="products-section">
+  <div class="products-inner">
+    <span class="section-label">What we make</span>
+    <h2 class="section-title">Our handmade collection 🎨</h2>
+    <p class="section-sub">Every single item is made by us — no machines, no shortcuts. Just two kids, some art supplies, and a whole lot of creativity.</p>
+
+    <div class="products-grid">
+      <div class="product-card p1">
+        <span class="product-icon">📌</span>
+        <div class="product-name">Badge Pins &amp; Magnets</div>
+        <p class="product-desc">Fun, colourful pins and fridge magnets hand-painted with unique designs. Perfect for school bags, jackets, bulletin boards, and gift sets. Great for bulk orders!</p>
+      </div>
+      <div class="product-card p2">
+        <span class="product-icon">📿</span>
+        <div class="product-name">Bracelets</div>
+        <p class="product-desc">Bright, cheerful bracelets handwoven with care. Each one is one-of-a-kind! Available in custom colours and patterns — perfect for parties, friendship gifts, or wedding favours.</p>
+      </div>
+      <div class="product-card p3">
+        <span class="product-icon">✨</span>
+        <div class="product-name">Earrings</div>
+        <p class="product-desc">Adorable handcrafted earrings in all sorts of shapes and colours. Lightweight, fun, and made with love — a wonderful gift for anyone who loves jewellery!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHY ARNI -->
+<section class="section">
+  <span class="section-label">Why choose us</span>
+  <h2 class="section-title">Why Arni Startup? 💜</h2>
+  <p class="section-sub">When you order from us, you're supporting two young entrepreneurs following their passion.</p>
+
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="why-icon wi1">🖐️</div>
+      <div class="why-text">
+        <h3>Truly handmade</h3>
+        <p>Every item is made entirely by hand — painted, woven, and assembled by Arjun and Niya themselves.</p>
+      </div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon wi2">🌈</div>
+      <div class="why-text">
+        <h3>Custom colours</h3>
+        <p>Bulk orders can request custom colour themes or designs to match your event, school, or brand.</p>
+      </div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon wi3">🎁</div>
+      <div class="why-text">
+        <h3>Perfect for gifting</h3>
+        <p>Our items make wonderful gifts for birthdays, parties, school events, wedding favours, and more.</p>
+      </div>
+    </div>
+    <div class="why-card">
+      <div class="why-icon wi4">💚</div>
+      <div class="why-text">
+        <h3>Support young creators</h3>
+        <p>Every purchase directly supports two kid entrepreneurs learning about business and creativity.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ORDER SECTION -->
+<section id="order" class="order-section">
+  <h2 class="order-title">Ready to place an order? 🎉</h2>
+  <p class="order-sub">We love bulk orders! Whether it's for a school, a party, or a shop — send us an email and we'll get back to you as soon as we can.</p>
+
+  <div class="order-card">
+    <h3>Place a bulk order</h3>
+    <p>Email us at the address below and let us know what you'd like, how many pieces, and your preferred colours or design ideas!</p>
+
+    <div class="email-link-box">
+      <span class="email-address">arni.startup@gmail.com</span>
+      <button class="copy-btn" onclick="
+        navigator.clipboard.writeText('arni.startup@gmail.com');
+        this.textContent = '✓ Copied!';
+        setTimeout(() => this.textContent = 'Copy', 2000);
+      ">Copy</button>
+    </div>
+
+    <ul class="order-info-list">
+      <li>Tell us what items you'd like (pins, bracelets, earrings or a mix)</li>
+      <li>Share your preferred colours, themes, or any special designs</li>
+      <li>Let us know the quantity and when you need them by</li>
+      <li>We'll reply with a quote and timeline as soon as possible</li>
+    </ul>
+
+    <br>
+    <a href="mailto:arni.startup@gmail.com?subject=Bulk Order Enquiry" class="btn-primary" style="display: block; text-align: center; margin-top: 0.5rem;">
+      Send us an email ✉️
+    </a>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-logo">Arni★</div>
+  <div class="footer-hearts">💜 💛 🩷</div>
+  <p>Made with love by <strong>Arjun (age 8)</strong> &amp; <strong>Niya (age 7)</strong> — two siblings building their dream one craft at a time.</p>
+  <p style="margin-top: 0.7rem;">Questions or orders? Reach us at <a href="mailto:arni.startup@gmail.com">arni.startup@gmail.com</a></p>
+  <p style="margin-top: 1.5rem; font-size: 0.8rem; color: #7C6AA6;">© 2024 Arni Startup · All items handmade with ❤️</p>
+</footer>
+
+</body>
+</html>
