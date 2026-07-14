@@ -726,6 +726,9 @@
         <label>Colour preference / special requests</label>
         <textarea id="fnotes" placeholder="e.g. pastel colours, birthday theme, school logo..."></textarea>
       </div>
+      <!-- Honeypot: hidden from humans, bots tend to fill it. Do not remove. -->
+      <input type="text" id="website" name="website" tabindex="-1" autocomplete="off"
+             style="position:absolute;left:-9999px;width:1px;height:1px;opacity:0;" aria-hidden="true">
       <button class="submit-btn" onclick="submitForm()">Send Order Request ✉️</button>
     </div>
 
@@ -761,6 +764,24 @@
       return;
     }
 
+    // Spam protection: if the hidden honeypot field is filled, it's a bot — silently stop
+    if (document.getElementById('website').value !== '') {
+      return;
+    }
+
+    // Basic email format check
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      alert('Please enter a valid email address!');
+      return;
+    }
+
+    // Simple rate limit: block repeated submits within 30 seconds
+    const lastSent = Number(sessionStorage.getItem('lastOrderSent') || 0);
+    if (Date.now() - lastSent < 30000) {
+      alert('Please wait a moment before sending another request.');
+      return;
+    }
+
     const btn = document.querySelector('.submit-btn');
     btn.textContent = 'Sending...';
     btn.disabled = true;
@@ -775,11 +796,24 @@
         to_email: 'arni.startup@gmail.com'
       });
 
+      sessionStorage.setItem('lastOrderSent', String(Date.now()));
+
       document.getElementById('orderForm').style.display = 'none';
-      document.getElementById('successMsg').innerHTML =
-        '🎉 Your order request has been sent!<br><br>' +
-        'We will reply to <strong>' + email + '</strong> as soon as possible. Thank you!';
-      document.getElementById('successMsg').style.display = 'block';
+      const msg = document.getElementById('successMsg');
+      // Build the message safely so the user's email can never inject HTML/script
+      msg.textContent = '';
+      const line1 = document.createElement('div');
+      line1.textContent = '🎉 Your order request has been sent!';
+      const line2 = document.createElement('div');
+      line2.style.marginTop = '0.8rem';
+      line2.appendChild(document.createTextNode('We will reply to '));
+      const emailStrong = document.createElement('strong');
+      emailStrong.textContent = email;
+      line2.appendChild(emailStrong);
+      line2.appendChild(document.createTextNode(' as soon as possible. Thank you!'));
+      msg.appendChild(line1);
+      msg.appendChild(line2);
+      msg.style.display = 'block';
 
     } catch(err) {
       alert('Oops! Something went wrong. Please email us directly at arni.startup@gmail.com');
