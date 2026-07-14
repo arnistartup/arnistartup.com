@@ -505,11 +505,46 @@
     letter-spacing: 0.4rem;
   }
 
+  /* FORM STYLES */
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+  .form-group label { font-size: 0.85rem; font-weight: 800; color: var(--text); }
+  .form-group input, .form-group select, .form-group textarea { padding: 0.75rem 1rem; border: 2px solid #E9D5FF; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--text); outline: none; transition: border-color 0.2s; background: white; width: 100%; box-sizing: border-box; }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--purple); }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+  .submit-btn { width: 100%; background: var(--purple); color: white; border: none; border-radius: 100px; padding: 1rem; font-size: 1.05rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer; margin-top: 0.5rem; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 20px rgba(168,85,247,0.35); }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(168,85,247,0.45); }
+  .success-msg { display: none; background: #F0FFF8; border: 2px solid #22C55E; border-radius: 14px; padding: 1.5rem; text-align: center; color: #166534; font-weight: 700; font-size: 1rem; margin-top: 1rem; line-height: 1.6; }
+
   @media (max-width: 640px) {
     nav { padding: 1rem 1.2rem; }
     .nav-links { display: none; }
     .founders-grid, .products-grid, .why-grid { grid-template-columns: 1fr; }
     .stats-inner { flex-direction: column; gap: 1.5rem; }
+  }
+
+  /* FORM STYLES */
+  .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
+  .form-group label { font-size: 0.85rem; font-weight: 800; color: var(--text); }
+  .form-group input, .form-group select, .form-group textarea {
+    padding: 0.75rem 1rem; border: 2px solid #E9D5FF; border-radius: 12px;
+    font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--text);
+    outline: none; transition: border-color 0.2s; background: white;
+    width: 100%; box-sizing: border-box;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--purple); }
+  .form-group textarea { resize: vertical; min-height: 100px; }
+  .submit-btn {
+    width: 100%; background: var(--purple); color: white; border: none;
+    border-radius: 100px; padding: 1rem; font-size: 1.05rem; font-weight: 800;
+    font-family: 'Nunito', sans-serif; cursor: pointer; margin-top: 0.5rem;
+    transition: transform 0.15s, box-shadow 0.15s;
+    box-shadow: 0 4px 20px rgba(168,85,247,0.35);
+  }
+  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(168,85,247,0.45); }
+  .success-msg {
+    display: none; background: #F0FFF8; border: 2px solid #22C55E;
+    border-radius: 14px; padding: 1.5rem; text-align: center; color: #166534;
+    font-weight: 700; font-size: 1rem; margin-top: 1rem; line-height: 1.6;
   }
 </style>
 </head>
@@ -534,7 +569,7 @@
   <div class="shape s4"></div>
   <div class="shape s5"></div>
 
-  <span class="hero-badge">☀️ Summer Startup 2024</span>
+  <span class="hero-badge">☀️ Summer Startup 2026</span>
   <h1>Handmade<br>with Heart</h1>
   <p>We're Arjun &amp; Niya — two young creators making colourful badge pins, magnets, bracelets, and earrings, one piece at a time. Every item is crafted by hand, with love.</p>
   <div class="hero-btns">
@@ -658,29 +693,45 @@
   <p class="order-sub">We love bulk orders! Whether it's for a school, a party, or a shop — send us an email and we'll get back to you as soon as we can.</p>
 
   <div class="order-card">
-    <h3>Place a bulk order</h3>
-    <p>Email us at the address below and let us know what you'd like, how many pieces, and your preferred colours or design ideas!</p>
+    <h3>Place a bulk order 📦</h3>
+    <p>Fill in the form below and we'll get back to you as soon as possible at <strong>arni.startup@gmail.com</strong></p>
 
-    <div class="email-link-box">
-      <span class="email-address">arni.startup@gmail.com</span>
-      <button class="copy-btn" onclick="
-        navigator.clipboard.writeText('arni.startup@gmail.com');
-        this.textContent = '✓ Copied!';
-        setTimeout(() => this.textContent = 'Copy', 2000);
-      ">Copy</button>
+    <div id="orderForm">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+        <div class="form-group">
+          <label>Your Name *</label>
+          <input type="text" id="fname" placeholder="e.g. Sarah" required>
+        </div>
+        <div class="form-group">
+          <label>Your Email *</label>
+          <input type="email" id="femail" placeholder="you@email.com" required>
+        </div>
+      </div>
+      <div class="form-group">
+        <label>What would you like to order? *</label>
+        <select id="fproduct">
+          <option value="">— Select a product —</option>
+          <option>Badge Pins</option>
+          <option>Magnets</option>
+          <option>Bracelets</option>
+          <option>Earrings</option>
+          <option>Mix of everything</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Quantity *</label>
+        <input type="number" id="fqty" placeholder="e.g. 50" min="1">
+      </div>
+      <div class="form-group">
+        <label>Colour preference / special requests</label>
+        <textarea id="fnotes" placeholder="e.g. pastel colours, birthday theme, school logo..."></textarea>
+      </div>
+      <button class="submit-btn" onclick="submitForm()">Send Order Request ✉️</button>
     </div>
 
-    <ul class="order-info-list">
-      <li>Tell us what items you'd like (pins, bracelets, earrings or a mix)</li>
-      <li>Share your preferred colours, themes, or any special designs</li>
-      <li>Let us know the quantity and when you need them by</li>
-      <li>We'll reply with a quote and timeline as soon as possible</li>
-    </ul>
-
-    <br>
-    <a href="mailto:arni.startup@gmail.com?subject=Bulk Order Enquiry" class="btn-primary" style="display: block; text-align: center; margin-top: 0.5rem;">
-      Send us an email ✉️
-    </a>
+    <div class="success-msg" id="successMsg">
+      🎉 Thank you! We've received your order request and will reply to your email soon!
+    </div>
   </div>
 </section>
 
@@ -690,8 +741,52 @@
   <div class="footer-hearts">💜 💛 🩷</div>
   <p>Made with love by <strong>Arjun (age 8)</strong> &amp; <strong>Niya (age 7)</strong> — two siblings building their dream one craft at a time.</p>
   <p style="margin-top: 0.7rem;">Questions or orders? Reach us at <a href="mailto:arni.startup@gmail.com">arni.startup@gmail.com</a></p>
-  <p style="margin-top: 1.5rem; font-size: 0.8rem; color: #7C6AA6;">© 2024 Arni Startup · All items handmade with ❤️</p>
+  <p style="margin-top: 1.5rem; font-size: 0.8rem; color: #7C6AA6;">© 2026 Arni Startup · All items handmade with ❤️</p>
 </footer>
 
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script>
+  emailjs.init('EIgc0sAV8OCMV5mPL');
+
+  async function submitForm() {
+    const name = document.getElementById('fname').value.trim();
+    const email = document.getElementById('femail').value.trim();
+    const product = document.getElementById('fproduct').value;
+    const qty = document.getElementById('fqty').value;
+    const notes = document.getElementById('fnotes').value.trim();
+
+    if (!name || !email || !product) {
+      alert('Please fill in your name, email and product selection!');
+      return;
+    }
+
+    const btn = document.querySelector('.submit-btn');
+    btn.textContent = 'Sending...';
+    btn.disabled = true;
+
+    try {
+      await emailjs.send('service_cuki6nm', 'template_5pzor48', {
+        name: name,
+        email: email,
+        product: product,
+        quantity: qty || 'Not specified',
+        notes: notes || 'None',
+        to_email: 'arni.startup@gmail.com'
+      });
+
+      document.getElementById('orderForm').style.display = 'none';
+      document.getElementById('successMsg').innerHTML =
+        '🎉 Your order request has been sent!<br><br>' +
+        'We will reply to <strong>' + email + '</strong> as soon as possible. Thank you!';
+      document.getElementById('successMsg').style.display = 'block';
+
+    } catch(err) {
+      alert('Oops! Something went wrong. Please email us directly at arni.startup@gmail.com');
+      btn.textContent = 'Send Order Request ✉️';
+      btn.disabled = false;
+    }
+  }
+</script>
 </body>
 </html>
