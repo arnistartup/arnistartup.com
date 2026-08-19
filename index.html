@@ -525,16 +525,6 @@
     letter-spacing: 0.4rem;
   }
 
-  /* FORM STYLES */
-  .form-group { display: flex; flex-direction: column; gap: 0.4rem; margin-bottom: 1rem; }
-  .form-group label { font-size: 0.85rem; font-weight: 800; color: var(--text); }
-  .form-group input, .form-group select, .form-group textarea { padding: 0.75rem 1rem; border: 2px solid #E9D5FF; border-radius: 12px; font-family: 'Nunito', sans-serif; font-size: 0.95rem; color: var(--text); outline: none; transition: border-color 0.2s; background: white; width: 100%; box-sizing: border-box; }
-  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { border-color: var(--purple); }
-  .form-group textarea { resize: vertical; min-height: 100px; }
-  .submit-btn { width: 100%; background: var(--purple); color: white; border: none; border-radius: 100px; padding: 1rem; font-size: 1.05rem; font-weight: 800; font-family: 'Nunito', sans-serif; cursor: pointer; margin-top: 0.5rem; transition: transform 0.15s, box-shadow 0.15s; box-shadow: 0 4px 20px rgba(168,85,247,0.35); }
-  .submit-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 28px rgba(168,85,247,0.45); }
-  .success-msg { display: none; background: #F0FFF8; border: 2px solid #22C55E; border-radius: 14px; padding: 1.5rem; text-align: center; color: #166534; font-weight: 700; font-size: 1rem; margin-top: 1rem; line-height: 1.6; }
-
   @media (max-width: 640px) {
     nav { padding: 1rem 1.2rem; }
     .nav-links { display: none; }
@@ -565,6 +555,62 @@
     display: none; background: #F0FFF8; border: 2px solid #22C55E;
     border-radius: 14px; padding: 1.5rem; text-align: center; color: #166534;
     font-weight: 700; font-size: 1rem; margin-top: 1rem; line-height: 1.6;
+  }
+  .price-summary {
+    display: none;
+    background: #FFFBEA;
+    border: 2px solid #FFE88A;
+    border-radius: 14px;
+    padding: 0.9rem 1rem;
+    margin: -0.2rem 0 1rem;
+    color: var(--purple);
+    font-weight: 700;
+    font-size: 1.1rem;
+  }
+  .product-options { display: grid; gap: 0.7rem; }
+  .product-option {
+    display: grid;
+    grid-template-columns: auto 1fr 90px;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem 0.9rem;
+    background: white;
+    border: 2px solid #E9D5FF;
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .product-option:has(input[type="checkbox"]:checked) {
+    border-color: var(--purple);
+    background: #FAF5FF;
+  }
+  .product-option input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    accent-color: var(--purple);
+  }
+  .product-option input[type="number"] {
+    padding: 0.55rem 0.65rem;
+    text-align: center;
+  }
+  .product-option-name { font-weight: 800; }
+  .product-option-price { color: #7C6AA6; font-size: 0.85rem; }
+  .shipping-options { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  .shipping-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.7rem 1rem;
+    background: white;
+    border: 2px solid #E9D5FF;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 700;
+  }
+  .shipping-option:has(input:checked) { border-color: var(--purple); background: #FAF5FF; }
+  .shipping-option input[type="radio"] {
+    width: 18px;
+    height: 18px;
+    accent-color: var(--purple);
   }
 </style>
 </head>
@@ -728,20 +774,44 @@
         </div>
       </div>
       <div class="form-group">
-        <label>What would you like to order? *</label>
-        <select id="fproduct">
-          <option value="">— Select a product —</option>
-          <option>Badge Pins</option>
-          <option>Magnets</option>
-          <option>Bracelets</option>
-          <option>Earrings</option>
-          <option>Mix of everything</option>
-        </select>
+        <label>What would you like to order? Select one or more. *</label>
+        <div class="product-options">
+          <label class="product-option">
+            <input type="checkbox" class="product-check" value="Badge Pins" data-price="2" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Badge Pins</span><br><span class="product-option-price">$2 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Badge Pins quantity" disabled oninput="updatePrice()">
+          </label>
+          <label class="product-option">
+            <input type="checkbox" class="product-check" value="Magnets" data-price="3" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Magnets</span><br><span class="product-option-price">$3 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Magnets quantity" disabled oninput="updatePrice()">
+          </label>
+          <label class="product-option">
+            <input type="checkbox" class="product-check" value="Bracelets" data-price="5" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Bracelets</span><br><span class="product-option-price">$5 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Bracelets quantity" disabled oninput="updatePrice()">
+          </label>
+          <label class="product-option">
+            <input type="checkbox" class="product-check" value="Earrings" data-price="3" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Earrings</span><br><span class="product-option-price">$3 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Earrings quantity" disabled oninput="updatePrice()">
+          </label>
+        </div>
       </div>
       <div class="form-group">
-        <label>Quantity *</label>
-        <input type="number" id="fqty" placeholder="e.g. 50" min="1">
+        <label>Do you need shipping?</label>
+        <div class="shipping-options">
+          <label class="shipping-option">
+            <input type="radio" name="shipping" value="yes" checked onchange="updatePrice()">
+            Yes — add $8
+          </label>
+          <label class="shipping-option">
+            <input type="radio" name="shipping" value="no" onchange="updatePrice()">
+            No shipping
+          </label>
+        </div>
       </div>
+      <div class="price-summary" id="priceSummary" aria-live="polite"></div>
       <div class="form-group">
         <label>Colour preference / special requests</label>
         <textarea id="fnotes" placeholder="e.g. pastel colours, birthday theme, school logo..."></textarea>
@@ -772,16 +842,70 @@
 <script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 <script>
   emailjs.init('EIgc0sAV8OCMV5mPL');
+  const SHIPPING_COST = 8;
+
+  // Disable the browser's right-click menu as a basic deterrent.
+  document.addEventListener('contextmenu', function(event) {
+    event.preventDefault();
+  });
+
+  function getOrderItems() {
+    return Array.from(document.querySelectorAll('.product-check:checked')).map(function(checkbox) {
+      const quantityInput = checkbox.closest('.product-option').querySelector('.product-qty');
+      const quantity = Number(quantityInput.value || 0);
+      const unitPrice = Number(checkbox.dataset.price);
+
+      return {
+        name: checkbox.value,
+        quantity: quantity,
+        unitPrice: unitPrice,
+        total: quantity * unitPrice
+      };
+    });
+  }
+
+  function getShippingCost() {
+    return document.querySelector('input[name="shipping"]:checked').value === 'yes' ? SHIPPING_COST : 0;
+  }
+
+  function toggleProduct(checkbox) {
+    const quantityInput = checkbox.closest('.product-option').querySelector('.product-qty');
+    quantityInput.disabled = !checkbox.checked;
+
+    if (checkbox.checked) {
+      if (!quantityInput.value) quantityInput.value = 1;
+      quantityInput.focus();
+    } else {
+      quantityInput.value = '';
+    }
+
+    updatePrice();
+  }
+
+  function updatePrice() {
+    const items = getOrderItems();
+    const summary = document.getElementById('priceSummary');
+
+    if (items.length === 0) {
+      summary.style.display = 'none';
+      summary.textContent = '';
+      return;
+    }
+
+    summary.style.display = 'block';
+    const subtotal = items.reduce(function(total, item) { return total + item.total; }, 0);
+    const orderTotal = subtotal + getShippingCost();
+    summary.textContent = 'Estimated total: $' + orderTotal.toFixed(2);
+  }
 
   async function submitForm() {
     const name = document.getElementById('fname').value.trim();
     const email = document.getElementById('femail').value.trim();
-    const product = document.getElementById('fproduct').value;
-    const qty = document.getElementById('fqty').value;
+    const items = getOrderItems();
     const notes = document.getElementById('fnotes').value.trim();
 
-    if (!name || !email || !product) {
-      alert('Please fill in your name, email and product selection!');
+    if (!name || !email || items.length === 0 || items.some(function(item) { return item.quantity < 1; })) {
+      alert('Please fill in your name and email, then select at least one product with a quantity!');
       return;
     }
 
@@ -804,6 +928,12 @@
     }
 
     const btn = document.querySelector('.submit-btn');
+    const productSummary = items.map(function(item) { return item.name; }).join(', ');
+    const quantitySummary = items.map(function(item) { return item.name + ': ' + item.quantity; }).join('; ');
+    const unitPriceSummary = items.map(function(item) { return item.name + ': $' + item.unitPrice.toFixed(2) + ' each'; }).join('; ');
+    const subtotal = items.reduce(function(total, item) { return total + item.total; }, 0);
+    const shippingCost = getShippingCost();
+    const orderTotal = subtotal + shippingCost;
     btn.textContent = 'Sending...';
     btn.disabled = true;
 
@@ -811,8 +941,11 @@
       await emailjs.send('service_cuki6nm', 'template_5pzor48', {
         name: name,
         email: email,
-        product: product,
-        quantity: qty || 'Not specified',
+        product: productSummary,
+        quantity: quantitySummary,
+        unit_price: unitPriceSummary,
+        shipping_cost: shippingCost > 0 ? '$' + shippingCost.toFixed(2) : 'No shipping',
+        estimated_total: '$' + orderTotal.toFixed(2),
         notes: notes || 'None',
         to_email: 'arni.startup@gmail.com'
       });
