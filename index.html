@@ -1156,6 +1156,209 @@
     .nav-order-button { padding: 0.55rem 1rem; font-size: 0.85rem; }
   }
 
+
+  /* REVIEWS */
+  .reviews-section {
+    background: linear-gradient(180deg, #FFF8F0 0%, #F0FFF8 50%, #FFF0FA 100%);
+    padding: 5rem 0;
+  }
+  .reviews-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+  .reviews-intro {
+    max-width: 560px;
+    margin: -0.5rem auto 2rem;
+    text-align: center;
+    color: #6B5580;
+    font-weight: 600;
+    line-height: 1.7;
+  }
+  .reviews-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+    gap: 1.25rem;
+    margin-bottom: 2.5rem;
+  }
+  .review-card {
+    background: white;
+    border: 2px solid #F0E8FF;
+    border-radius: 20px;
+    overflow: hidden;
+  }
+  .review-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    background: #FAF5FF;
+  }
+  .review-card-body { padding: 1rem 1.1rem 1.2rem; }
+  .review-card-text {
+    color: var(--text);
+    font-weight: 700;
+    line-height: 1.55;
+    margin-bottom: 0.75rem;
+  }
+  .review-card-meta {
+    color: #7C6AA6;
+    font-weight: 800;
+    font-size: 0.88rem;
+  }
+  .reviews-empty {
+    text-align: center;
+    color: #6B5580;
+    font-weight: 700;
+    margin-bottom: 2rem;
+  }
+  .review-form-card {
+    background: white;
+    border: 2px solid #E9D5FF;
+    border-radius: 24px;
+    padding: 1.75rem;
+    margin-bottom: 1.5rem;
+  }
+  .review-form-card h3 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--purple);
+    font-size: 1.4rem;
+    margin-bottom: 0.35rem;
+  }
+  .review-form-card > p {
+    color: #6B5580;
+    font-weight: 600;
+    margin-bottom: 1.2rem;
+    line-height: 1.55;
+  }
+  .review-form-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.85rem;
+  }
+  .review-form-card textarea {
+    width: 100%;
+    min-height: 110px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E9D5FF;
+    border-radius: 12px;
+    background: #FAF5FF;
+    color: var(--text);
+    resize: vertical;
+  }
+  .review-form-card input[type="file"] {
+    width: 100%;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+  }
+  .review-image-preview {
+    display: block;
+    width: 140px;
+    height: 140px;
+    object-fit: cover;
+    border-radius: 14px;
+    margin: 0.5rem 0 1rem;
+    border: 2px solid #E9D5FF;
+  }
+  .reviews-status {
+    margin-top: 0.85rem;
+    font-weight: 700;
+    font-size: 0.92rem;
+    line-height: 1.45;
+  }
+  .reviews-status.is-busy { color: var(--purple); }
+  .reviews-status.is-ok { color: #166534; }
+  .reviews-status.is-error { color: #BE185D; }
+  .reviews-admin-panel {
+    background: white;
+    border: 3px dashed #D8B4FE;
+    border-radius: 24px;
+    padding: 1.5rem;
+    text-align: left;
+  }
+  .reviews-admin-panel > p {
+    color: #6B5580;
+    font-weight: 600;
+    margin-bottom: 1rem;
+  }
+  .reviews-pending-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .review-pending-card {
+    display: grid;
+    grid-template-columns: 96px 1fr;
+    gap: 0.9rem;
+    padding: 0.9rem;
+    border: 2px solid #F0E8FF;
+    border-radius: 16px;
+    background: #FAF5FF;
+  }
+  .review-pending-card img {
+    width: 96px;
+    height: 96px;
+    object-fit: cover;
+    border-radius: 12px;
+  }
+  .review-pending-info h4 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    margin-bottom: 0.35rem;
+    color: var(--text);
+  }
+  .review-pending-info p {
+    color: #6B5580;
+    font-weight: 600;
+    font-size: 0.92rem;
+    line-height: 1.45;
+    margin-bottom: 0.7rem;
+  }
+  .review-pending-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6rem;
+    align-items: center;
+  }
+  .review-reject-btn {
+    border: 2px solid #FFCCE8;
+    background: white;
+    color: var(--pink);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    padding: 0.55rem 1rem;
+    border-radius: 100px;
+    cursor: pointer;
+  }
+  @media (max-width: 640px) {
+    .review-form-grid { grid-template-columns: 1fr; }
+    .review-pending-card { grid-template-columns: 1fr; }
+  }
+
+
+  .review-manual-publish {
+    margin-top: 1.5rem;
+    padding-top: 1.25rem;
+    border-top: 2px dashed #E9D5FF;
+  }
+  .review-manual-publish h4 {
+    font-family: 'Fredoka One', cursive;
+    color: var(--purple);
+    margin-bottom: 0.85rem;
+  }
+  .review-manual-publish textarea {
+    width: 100%;
+    min-height: 90px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E9D5FF;
+    border-radius: 12px;
+    background: #FAF5FF;
+    color: var(--text);
+    resize: vertical;
+  }
+
 </style>
 </head>
 <body>
@@ -1166,6 +1369,7 @@
   <ul class="nav-links">
     <li><a href="#about">About us</a></li>
     <li><a href="#catalog">Catalog</a></li>
+    <li><a href="#reviews">Reviews</a></li>
     <li><a href="#order">Place a custom order</a></li>
   </ul>
   <div class="nav-actions">
@@ -1321,6 +1525,97 @@
 </section>
 
 <!-- ORDER SECTION -->
+<!-- REVIEWS -->
+<section id="reviews" class="reviews-section">
+  <div class="reviews-inner">
+    <span class="section-label">What families say</span>
+    <h2 class="section-title">Reviews 💬</h2>
+    <p class="reviews-intro">Share your Arni story with a photo. New reviews are checked by us first, then published here.</p>
+
+    <div class="reviews-grid" id="reviewsGrid"></div>
+    <p class="reviews-empty" id="reviewsEmpty" hidden></p>
+
+    <div class="review-form-card">
+      <h3>Write a review</h3>
+      <p>Tell us what you loved — and attach a photo of your handmade piece. Photo is required.</p>
+      <form id="reviewForm">
+        <div class="review-form-grid">
+          <label class="catalog-admin-field">
+            <span>Your name *</span>
+            <input id="reviewName" type="text" required maxlength="60" placeholder="e.g. Priya" autocomplete="name">
+          </label>
+          <label class="catalog-admin-field">
+            <span>Your email *</span>
+            <input id="reviewEmail" type="email" required placeholder="you@email.com" autocomplete="email">
+          </label>
+        </div>
+        <label class="catalog-admin-field">
+          <span>Your review *</span>
+          <textarea id="reviewText" required maxlength="500" placeholder="We loved our custom badges!"></textarea>
+        </label>
+        <label class="catalog-admin-field">
+          <span>Photo * (required)</span>
+          <input id="reviewImage" type="file" accept="image/*" required>
+        </label>
+        <img id="reviewImagePreview" class="review-image-preview" alt="Selected review photo preview" hidden>
+        <input class="honeypot" type="text" id="reviewWebsite" name="review-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+        <button type="submit" class="btn-primary" id="reviewSubmitBtn">Submit review</button>
+        <p class="reviews-status" id="reviewFormStatus" hidden></p>
+      </form>
+    </div>
+
+    <div class="catalog-admin" id="reviewsAdmin">
+      <button type="button" class="catalog-admin-link" id="reviewsAdminOpen">Admin login to approve reviews</button>
+
+      <form class="catalog-admin-login" id="reviewsAdminLogin" hidden>
+        <h3>Admin login</h3>
+        <p>Approve pending reviews and publish them to the live site.</p>
+        <label class="catalog-admin-field">
+          <span>Admin password</span>
+          <input id="reviewsAdminPassword" type="password" autocomplete="current-password" required>
+        </label>
+        <label class="catalog-admin-field">
+          <span>GitHub token</span>
+          <input id="reviewsAdminToken" type="password" autocomplete="off" placeholder="github_pat_… or ghp_…" required>
+        </label>
+        <div class="catalog-admin-login-row">
+          <button type="submit" class="btn-primary">Log in</button>
+        </div>
+        <p class="catalog-admin-error" id="reviewsAdminError" hidden></p>
+        <button type="button" class="catalog-admin-cancel" id="reviewsAdminCancel">Cancel</button>
+      </form>
+
+      <div class="reviews-admin-panel" id="reviewsAdminPanel" hidden>
+        <div class="catalog-upload-header">
+          <h3>Approve reviews</h3>
+          <button type="button" class="catalog-admin-logout" id="reviewsAdminLogout">Log out</button>
+        </div>
+        <p>Pending reviews submitted on this device appear below. You can also publish a review from email using the form.</p>
+        <p class="reviews-empty" id="reviewsPendingEmpty" hidden>No pending reviews on this device.</p>
+        <div id="reviewsPendingList" class="reviews-pending-list"></div>
+
+        <form id="reviewsManualPublish" class="review-manual-publish">
+          <h4>Publish from email</h4>
+          <label class="catalog-admin-field">
+            <span>Reviewer name *</span>
+            <input id="manualReviewName" type="text" required maxlength="60">
+          </label>
+          <label class="catalog-admin-field">
+            <span>Review text *</span>
+            <textarea id="manualReviewText" required maxlength="500"></textarea>
+          </label>
+          <label class="catalog-admin-field">
+            <span>Photo *</span>
+            <input id="manualReviewImage" type="file" accept="image/*" required>
+          </label>
+          <button type="submit" class="btn-primary">Publish review</button>
+        </form>
+        <p class="reviews-status" id="reviewsPublishStatus" hidden></p>
+      </div>
+    </div>
+  </div>
+</section>
+
 <section id="order" class="order-section">
   <h2 class="order-title">Ready to place an order? 🎉</h2>
 
@@ -1385,6 +1680,7 @@
     </div>
   </div>
 </section>
+
 
 
 <!-- CART -->
@@ -1599,5 +1895,7 @@
 <script src="assets/js/catalog-data.js"></script>
 <script src="assets/js/cart.js"></script>
 <script src="assets/js/catalog.js"></script>
+<script src="assets/js/reviews-data.js"></script>
+<script src="assets/js/reviews.js"></script>
 </body>
 </html>
