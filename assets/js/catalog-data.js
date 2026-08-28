@@ -16,5 +16,11 @@ window.ARNI_CATALOG_SEED = [
     "title": "Bracelet",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-0268-1787935369714.jpg"
+  },
+  {
+    "id": "earrings-image-from-ios-4-1787935664273-0",
+    "title": "Image From IOS (4)",
+    "category": "earrings",
+    "src": "assets/catalog/earrings/image-from-ios-4-1787935664273.jpg"
   }
 ];
