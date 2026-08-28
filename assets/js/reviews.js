@@ -555,6 +555,7 @@
 
       if (typeof emailjs !== "undefined" && emailjs.send) {
         await emailjs.send("service_cuki6nm", "template_5pzor48", {
+          subject: "Review received from " + name,
           name: name,
           email: email,
           product: "Website Review (pending approval)",
@@ -563,7 +564,9 @@
           shipping_cost: "N/A",
           estimated_total: "N/A",
           notes:
-            "NEW REVIEW PENDING APPROVAL\n\n" +
+            "Review received from " +
+            name +
+            "\n\n" +
             text +
             "\n\nOpen the website → Reviews → Admin login to approve and publish.",
           to_email: "arni.startup@gmail.com"

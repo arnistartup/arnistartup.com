@@ -1542,7 +1542,7 @@
         <div class="review-form-grid">
           <label class="catalog-admin-field">
             <span>Your name *</span>
-            <input id="reviewName" type="text" required maxlength="60" placeholder="e.g. Priya" autocomplete="name">
+            <input id="reviewName" type="text" required maxlength="60" placeholder="e.g. Arjun Vardha" autocomplete="name">
           </label>
           <label class="catalog-admin-field">
             <span>Your email *</span>
@@ -1853,6 +1853,7 @@
 
     try {
       await emailjs.send('service_cuki6nm', 'template_5pzor48', {
+        subject: 'New Bulk Order from ' + name,
         name: name,
         email: email,
         product: productSummary,

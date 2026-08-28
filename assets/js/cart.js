@@ -331,6 +331,7 @@
 
     try {
       await emailjs.send("service_cuki6nm", "template_5pzor48", {
+        subject: "New Bulk Order from " + name,
         name: name,
         email: email,
         product: productSummary,
