@@ -551,6 +551,332 @@
     .founders-grid, .products-grid, .why-grid, .customer-grid { grid-template-columns: 1fr; }
     .stats-inner { flex-direction: column; gap: 1.5rem; }
   }
+
+  /* CATALOG */
+  .catalog-section {
+    background: linear-gradient(180deg, #FFF8F0 0%, #FFF0FA 45%, #F5F0FF 100%);
+    padding: 5rem 0;
+  }
+  .catalog-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
+
+  .catalog-intro {
+    max-width: 560px;
+    color: #6B5580;
+    font-weight: 600;
+    line-height: 1.7;
+    margin: -0.5rem auto 2rem;
+    text-align: center;
+  }
+
+  .catalog-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+    justify-content: center;
+    margin-bottom: 2rem;
+  }
+  .catalog-filter {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.9rem;
+    border: 2px solid #E9D5FF;
+    background: white;
+    color: var(--text);
+    padding: 0.55rem 1.1rem;
+    border-radius: 100px;
+    cursor: pointer;
+    transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s;
+  }
+  .catalog-filter:hover { border-color: var(--purple); transform: translateY(-1px); }
+  .catalog-filter.is-active {
+    background: var(--purple);
+    border-color: var(--purple);
+    color: white;
+  }
+
+  .catalog-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1.25rem;
+  }
+
+  .catalog-card {
+    background: white;
+    border: 2px solid #F0E8FF;
+    border-radius: 20px;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+  }
+  .catalog-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 10px 28px rgba(168,85,247,0.15);
+  }
+  .catalog-card img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    background: #FAF5FF;
+  }
+  .catalog-card-meta { padding: 0.85rem 1rem 1rem; }
+  .catalog-card-badge {
+    display: inline-block;
+    font-size: 0.72rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #7C3AED;
+    background: #F3E8FF;
+    padding: 0.2rem 0.55rem;
+    border-radius: 100px;
+    margin-bottom: 0.4rem;
+  }
+  .catalog-card-title {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: var(--text);
+    font-weight: 400;
+    line-height: 1.3;
+  }
+  .catalog-card-remove {
+    margin-top: 0.55rem;
+    border: none;
+    background: transparent;
+    color: var(--pink);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.8rem;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  .catalog-empty {
+    text-align: center;
+    color: #6B5580;
+    font-weight: 700;
+    padding: 2rem 1rem 1rem;
+  }
+
+  .catalog-upload {
+    margin-top: 2.75rem;
+    background: white;
+    border: 3px dashed #D8B4FE;
+    border-radius: 24px;
+    padding: 1.75rem;
+  }
+  .catalog-upload h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.35rem;
+    color: var(--purple);
+    margin-bottom: 0.4rem;
+  }
+  .catalog-upload p {
+    color: #6B5580;
+    font-weight: 600;
+    font-size: 0.95rem;
+    line-height: 1.6;
+    margin-bottom: 1.2rem;
+  }
+  .catalog-upload-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.85rem;
+    align-items: center;
+  }
+  .catalog-upload select {
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.7rem 1rem;
+    border: 2px solid #E9D5FF;
+    border-radius: 12px;
+    background: #FAF5FF;
+    color: var(--text);
+  }
+  .catalog-upload-label {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    cursor: pointer;
+  }
+  .catalog-upload input[type="file"] { display: none; }
+  .catalog-clear {
+    margin-left: auto;
+    background: transparent;
+    border: 2px solid #FFCCE8;
+    color: var(--pink);
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    padding: 0.65rem 1.1rem;
+    border-radius: 100px;
+    cursor: pointer;
+  }
+  .catalog-dropzone.is-dragover {
+    border-color: var(--purple);
+    background: #FAF5FF;
+  }
+
+  .catalog-admin {
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+  .catalog-admin-link {
+    background: none;
+    border: none;
+    color: #B8A4D4;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.85rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+  .catalog-admin-link:hover { color: var(--purple); }
+
+  .catalog-admin-field {
+    display: block;
+    text-align: left;
+    margin-bottom: 0.85rem;
+  }
+  .catalog-admin-field span {
+    display: block;
+    font-weight: 800;
+    font-size: 0.85rem;
+    color: var(--text);
+    margin-bottom: 0.35rem;
+  }
+  .catalog-admin-field input {
+    width: 100%;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E9D5FF;
+    border-radius: 12px;
+    background: #FAF5FF;
+    color: var(--text);
+  }
+  .catalog-admin-hint {
+    font-size: 0.82rem !important;
+    color: #7C6AA6 !important;
+    margin-bottom: 1rem !important;
+  }
+  .catalog-upload-status {
+    margin-top: 1rem;
+    font-weight: 700;
+    font-size: 0.92rem;
+    color: #6B5580;
+    line-height: 1.5;
+  }
+  .catalog-upload-status.is-busy { color: var(--purple); }
+  .catalog-upload-status.is-ok { color: #166534; }
+  .catalog-upload-status.is-error { color: #BE185D; }
+  .catalog-upload code {
+    font-size: 0.85em;
+    background: #FAF5FF;
+    padding: 0.1rem 0.35rem;
+    border-radius: 6px;
+  }
+
+
+  .catalog-admin-login {
+    margin-top: 1rem;
+    background: white;
+    border: 2px solid #E9D5FF;
+    border-radius: 24px;
+    padding: 1.5rem;
+    text-align: left;
+    max-width: 420px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  .catalog-admin-login h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25rem;
+    color: var(--purple);
+    margin-bottom: 0.35rem;
+  }
+  .catalog-admin-login > p {
+    color: #6B5580;
+    font-weight: 600;
+    font-size: 0.92rem;
+    margin-bottom: 1rem;
+    line-height: 1.5;
+  }
+  .catalog-admin-login-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.65rem;
+  }
+  .catalog-admin-login input[type="password"] {
+    flex: 1 1 160px;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 1rem;
+    padding: 0.75rem 1rem;
+    border: 2px solid #E9D5FF;
+    border-radius: 12px;
+    background: #FAF5FF;
+    color: var(--text);
+  }
+  .catalog-admin-error {
+    color: #BE185D;
+    font-weight: 700;
+    font-size: 0.88rem;
+    margin-top: 0.75rem;
+  }
+  .catalog-admin-cancel,
+  .catalog-admin-logout {
+    margin-top: 0.85rem;
+    background: none;
+    border: none;
+    color: #6B5580;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.88rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    padding: 0;
+  }
+  .catalog-upload-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 0.4rem;
+  }
+  .catalog-upload-header h3 { margin-bottom: 0; }
+  .catalog-admin-logout { margin-top: 0; }
+  .catalog-upload {
+    text-align: left;
+  }
+
+  @media (max-width: 640px) {
+    .catalog-admin-login-row { flex-direction: column; }
+    .catalog-admin-login-row .btn-primary { width: 100%; text-align: center; justify-content: center; }
+    .catalog-upload-header { flex-direction: column; align-items: flex-start; }
+  }
+
+
+  @media (max-width: 640px) {
+    .catalog-clear { margin-left: 0; width: 100%; }
+    .catalog-upload-controls { flex-direction: column; align-items: stretch; }
+  }
+
+
+  .visually-hidden {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+
 </style>
 </head>
 <body>
@@ -561,6 +887,7 @@
   <ul class="nav-links">
     <li><a href="#about">About us</a></li>
     <li><a href="#products">What we make</a></li>
+    <li><a href="#catalog">Catalog</a></li>
     <li><a href="#order">Place a custom order</a></li>
   </ul>
   <a href="#order" class="btn-primary nav-order-button">Order now</a>
@@ -647,6 +974,68 @@
         <span class="product-icon">✨</span>
         <div class="product-name">Earrings</div>
         <p class="product-desc">Adorable handcrafted earrings in all sorts of shapes and colors. Lightweight, fun, and made with love — a wonderful gift for anyone who loves jewelry!</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+<!-- CATALOG -->
+<section id="catalog" class="catalog-section">
+  <div class="catalog-inner">
+    <span class="section-label">Browse our work</span>
+    <h2 class="section-title">Catalog ✨</h2>
+    <p class="catalog-intro">Every piece we make, in one place. Browse everything, or filter by badge pins, magnets, keychains, bracelets, and earrings.</p>
+
+    <div class="catalog-filters" id="catalogFilters" role="tablist" aria-label="Catalog categories"></div>
+    <div class="catalog-grid" id="catalogGrid"></div>
+    <p class="catalog-empty" id="catalogEmpty" hidden></p>
+
+    <div class="catalog-admin" id="catalogAdmin">
+      <button type="button" class="catalog-admin-link" id="catalogAdminOpen">Admin login</button>
+
+      <form class="catalog-admin-login" id="catalogAdminLogin" hidden>
+        <h3>Admin login</h3>
+        <p>Sign in to upload photos straight into the GitHub catalog folders.</p>
+        <label class="catalog-admin-field">
+          <span>Admin password</span>
+          <input id="catalogAdminPassword" type="password" autocomplete="current-password" placeholder="Admin password" required>
+        </label>
+        <label class="catalog-admin-field">
+          <span>GitHub token</span>
+          <input id="catalogAdminToken" type="password" autocomplete="off" placeholder="github_pat_… or ghp_…" required>
+        </label>
+        <p class="catalog-admin-hint">Use a fine-grained token with Contents: Read and write on the <strong>arnistartup/arnistartup.com</strong> repo. The token stays in this browser tab only.</p>
+        <div class="catalog-admin-login-row">
+          <button type="submit" class="btn-primary">Log in</button>
+        </div>
+        <p class="catalog-admin-error" id="catalogAdminError" hidden></p>
+        <button type="button" class="catalog-admin-cancel" id="catalogAdminCancel">Cancel</button>
+      </form>
+
+      <div class="catalog-upload catalog-dropzone" id="catalogDropzone" hidden>
+        <div class="catalog-upload-header">
+          <h3>Add photos to GitHub</h3>
+          <button type="button" class="catalog-admin-logout" id="catalogAdminLogout">Log out</button>
+        </div>
+        <p>Pick a category, then choose photos. Each photo is saved to <code>assets/catalog/&lt;category&gt;/</code> and added to <code>catalog-data.js</code> so it shows for everyone after GitHub Pages refreshes.</p>
+        <div class="catalog-upload-controls">
+          <label>
+            <span class="visually-hidden">Category</span>
+            <select id="catalogUploadCategory" aria-label="Photo category">
+              <option value="badge-pins">Badge pins</option>
+              <option value="magnets">Magnets</option>
+              <option value="keychains">Keychains</option>
+              <option value="bracelets">Bracelets</option>
+              <option value="earrings">Earrings</option>
+            </select>
+          </label>
+          <label class="btn-primary catalog-upload-label" id="catalogUploadLabel">
+            Choose photos
+            <input id="catalogFileInput" type="file" accept="image/*" multiple>
+          </label>
+        </div>
+        <p class="catalog-upload-status" id="catalogUploadStatus" hidden></p>
       </div>
     </div>
   </div>
@@ -919,5 +1308,8 @@
   }
 
 </script>
+
+<script src="assets/js/catalog-data.js"></script>
+<script src="assets/js/catalog.js"></script>
 </body>
 </html>
