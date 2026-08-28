@@ -22,7 +22,6 @@
 
   var openBtn = document.getElementById("cartOpenBtn");
   var countEl = document.getElementById("cartCount");
-  var catalogSection = document.getElementById("catalog");
   var drawer = document.getElementById("cartDrawer");
   var backdrop = document.getElementById("cartBackdrop");
   var closeBtn = document.getElementById("cartCloseBtn");
@@ -36,7 +35,6 @@
   var placeBtn = document.getElementById("cartPlaceOrder");
   var statusEl = document.getElementById("cartStatus");
   var honeypot = document.getElementById("cartWebsite");
-  var catalogActive = false;
 
   function loadCart() {
     try {
@@ -87,13 +85,7 @@
     }
     if (openBtn) {
       openBtn.setAttribute("aria-label", "Open cart (" + count + " items)");
-      openBtn.classList.add("is-visible");
-      openBtn.hidden = false;
     }
-  }
-
-  function setCatalogActive(active) {
-    catalogActive = !!active;
   }
 
   function setStatus(message, kind) {
@@ -381,52 +373,9 @@
     if (e.key === "Escape" && drawer && !drawer.hidden) closeCart();
   });
 
-  document.querySelectorAll('a[href="#catalog"]').forEach(function (link) {
-    link.addEventListener("click", function () {
-      setCatalogActive(true);
-    });
-  });
-
-  if (catalogSection && "IntersectionObserver" in window) {
-    var observer = new IntersectionObserver(
-      function (entries) {
-        entries.forEach(function (entry) {
-          if (entry.isIntersecting && entry.intersectionRatio > 0.15) {
-            setCatalogActive(true);
-          } else if (!entry.isIntersecting) {
-            // Keep cart visible if drawer is open or URL is still on catalog.
-            if (
-              (drawer && !drawer.hidden) ||
-              window.location.hash === "#catalog"
-            ) {
-              setCatalogActive(true);
-            } else {
-              setCatalogActive(false);
-            }
-          }
-        });
-      },
-      { threshold: [0.15, 0.3] }
-    );
-    observer.observe(catalogSection);
-  }
-
-  window.addEventListener("hashchange", function () {
-    setCatalogActive(window.location.hash === "#catalog");
-  });
-
-  if (window.location.hash === "#catalog") {
-    setCatalogActive(true);
-  }
-
   window.ArniCart = {
     addItem: addItem,
-    open: openCart,
-    priceForCategory: priceForCategory,
-    getCount: cartCount,
-    showForCatalog: function () {
-      setCatalogActive(true);
-    }
+    priceForCategory: priceForCategory
   };
 
   updateCount();

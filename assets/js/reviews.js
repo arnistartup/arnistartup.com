@@ -68,9 +68,7 @@
     if (!message) {
       el.hidden = true;
       el.textContent = "";
-      el.className = el.id === "reviewsPublishStatus"
-        ? "reviews-status"
-        : "reviews-status";
+      el.className = "reviews-status";
       return;
     }
     el.hidden = false;
@@ -116,16 +114,6 @@
       base64: out.split(",")[1],
       ext: ".jpg"
     };
-  }
-
-  function arrayBufferToBase64(buffer) {
-    var bytes = new Uint8Array(buffer);
-    var chunk = 0x8000;
-    var binary = "";
-    for (var i = 0; i < bytes.length; i += chunk) {
-      binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunk));
-    }
-    return btoa(binary);
   }
 
   function utf8ToBase64(text) {
@@ -484,22 +472,35 @@
     }
   }
 
+  function clearPreview() {
+    if (!preview) return;
+    preview.hidden = true;
+    preview.removeAttribute("src");
+    preview.alt = "";
+  }
+
   if (fileInput) {
     fileInput.addEventListener("change", async function () {
       var file = fileInput.files && fileInput.files[0];
-      if (!file || !preview) return;
+      if (!preview) return;
+      if (!file) {
+        clearPreview();
+        return;
+      }
       if (!file.type || file.type.indexOf("image/") !== 0) {
         setStatus(statusEl, "Please choose an image file.", "error");
         fileInput.value = "";
-        preview.hidden = true;
+        clearPreview();
         return;
       }
       try {
         var compressed = await compressImage(file, 800, 0.75);
+        preview.alt = "Selected photo preview";
         preview.src = compressed.dataUrl;
         preview.hidden = false;
         setStatus(statusEl, "");
       } catch (err) {
+        clearPreview();
         setStatus(statusEl, "Could not read that image. Try another photo.", "error");
       }
     });
@@ -581,10 +582,7 @@
       }
 
       form.reset();
-      if (preview) {
-        preview.hidden = true;
-        preview.removeAttribute("src");
-      }
+      clearPreview();
       renderPending();
       setStatus(
         statusEl,

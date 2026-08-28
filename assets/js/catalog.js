@@ -112,19 +112,6 @@
     adminError.textContent = message;
   }
 
-  function arrayBufferToBase64(buffer) {
-    var bytes = new Uint8Array(buffer);
-    var chunk = 0x8000;
-    var binary = "";
-    for (var i = 0; i < bytes.length; i += chunk) {
-      binary += String.fromCharCode.apply(
-        null,
-        bytes.subarray(i, i + chunk)
-      );
-    }
-    return btoa(binary);
-  }
-
   function utf8ToBase64(text) {
     return btoa(unescape(encodeURIComponent(text)));
   }
@@ -440,13 +427,8 @@
       addBtn.addEventListener("click", function (e) {
         e.preventDefault();
         e.stopPropagation();
-        if (window.ArniCart) {
-          if (typeof window.ArniCart.showForCatalog === "function") {
-            window.ArniCart.showForCatalog();
-          }
-          if (typeof window.ArniCart.addItem === "function") {
-            window.ArniCart.addItem(item);
-          }
+        if (window.ArniCart && typeof window.ArniCart.addItem === "function") {
+          window.ArniCart.addItem(item);
         }
       });
 
@@ -603,6 +585,14 @@
     var category = categorySelect ? categorySelect.value : "badge-pins";
     if (UPLOAD_CATEGORIES.indexOf(category) === -1) {
       setStatus("Pick a valid category first.", "error");
+      return;
+    }
+
+    var customName = nameInput ? nameInput.value.trim() : "";
+    if (!customName) {
+      setStatus("Enter a name before choosing photos.", "error");
+      if (nameInput) nameInput.focus();
+      if (fileInput) fileInput.value = "";
       return;
     }
 
