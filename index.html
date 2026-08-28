@@ -1177,30 +1177,41 @@
     gap: 1.25rem;
     margin-bottom: 2.5rem;
   }
+  #reviews { scroll-margin-top: 100px; }
   .review-card {
     background: white;
     border: 2px solid #F0E8FF;
     border-radius: 20px;
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
-  .review-card img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    display: block;
-    background: #FAF5FF;
+  .review-card-body { padding: 1.15rem 1.2rem 1rem; order: 1; }
+  .review-card-name {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.15rem;
+    color: var(--purple);
+    margin-bottom: 0.45rem;
   }
-  .review-card-body { padding: 1rem 1.1rem 1.2rem; }
   .review-card-text {
     color: var(--text);
     font-weight: 700;
     line-height: 1.55;
-    margin-bottom: 0.75rem;
+    margin-bottom: 0.55rem;
   }
-  .review-card-meta {
+  .review-card-date {
     color: #7C6AA6;
     font-weight: 800;
-    font-size: 0.88rem;
+    font-size: 0.85rem;
+  }
+  .review-card img {
+    width: 100%;
+    aspect-ratio: 4 / 3;
+    object-fit: contain;
+    display: block;
+    background: #FAF5FF;
+    order: 2;
+    border-top: 1px solid #F0E8FF;
   }
   .reviews-empty {
     text-align: center;
@@ -1357,6 +1368,15 @@
     background: #FAF5FF;
     color: var(--text);
     resize: vertical;
+  }
+
+
+  .reviews-published-heading {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.25rem;
+    color: var(--text);
+    margin: 0 0 1rem;
+    text-align: center;
   }
 
 </style>
@@ -1532,6 +1552,7 @@
     <h2 class="section-title">Reviews 💬</h2>
     <p class="reviews-intro">Share your Arni story with a photo. New reviews are checked by us first, then published here.</p>
 
+    <h3 class="reviews-published-heading">Published reviews</h3>
     <div class="reviews-grid" id="reviewsGrid"></div>
     <p class="reviews-empty" id="reviewsEmpty" hidden></p>
 

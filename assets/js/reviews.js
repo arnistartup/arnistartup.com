@@ -272,29 +272,36 @@
         var card = document.createElement("article");
         card.className = "review-card";
 
+        var body = document.createElement("div");
+        body.className = "review-card-body";
+
+        var who = document.createElement("h3");
+        who.className = "review-card-name";
+        who.textContent = review.name || "Customer";
+
+        var quote = document.createElement("p");
+        quote.className = "review-card-text";
+        quote.textContent = "“" + (review.text || "") + "”";
+
+        if (review.date) {
+          var date = document.createElement("p");
+          date.className = "review-card-date";
+          date.textContent = review.date;
+          body.appendChild(who);
+          body.appendChild(quote);
+          body.appendChild(date);
+        } else {
+          body.appendChild(who);
+          body.appendChild(quote);
+        }
+
         var img = document.createElement("img");
         img.src = review.src;
         img.alt = "Photo from " + (review.name || "a customer");
         img.loading = "lazy";
 
-        var body = document.createElement("div");
-        body.className = "review-card-body";
-
-        var quote = document.createElement("p");
-        quote.className = "review-card-text";
-        quote.textContent = review.text;
-
-        var meta = document.createElement("div");
-        meta.className = "review-card-meta";
-        meta.textContent =
-          "— " +
-          (review.name || "Customer") +
-          (review.date ? " · " + review.date : "");
-
-        body.appendChild(quote);
-        body.appendChild(meta);
-        card.appendChild(img);
         card.appendChild(body);
+        card.appendChild(img);
         grid.appendChild(card);
       });
   }
