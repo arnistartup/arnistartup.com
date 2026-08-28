@@ -132,6 +132,24 @@
     return decodeURIComponent(escape(atob(b64)));
   }
 
+  function friendlyGithubError(message, status) {
+    var msg = String(message || "");
+    var lower = msg.toLowerCase();
+    if (
+      lower.indexOf("resource not accessible by personal access token") !==
+        -1 ||
+      status === 403
+    ) {
+      return (
+        "Your GitHub token cannot write to this repo. Create a classic token " +
+        "while logged in as arnistartup with the public_repo scope " +
+        "(GitHub → Settings → Developer settings → Personal access tokens → " +
+        "Tokens (classic)), then log in again."
+      );
+    }
+    return msg || "GitHub request failed (" + status + ")";
+  }
+
   async function githubApi(path, options) {
     options = options || {};
     var res = await fetch(
@@ -161,43 +179,98 @@
     }
 
     if (!res.ok) {
-      var msg =
-        (data && (data.message || data.error)) ||
-        "GitHub request failed (" + res.status + ")";
-      throw new Error(msg);
+      throw new Error(
+        friendlyGithubError(
+          data && (data.message || data.error),
+          res.status
+        )
+      );
     }
     return data;
   }
 
   async function verifyGithubToken(token) {
-    var res = await fetch(
+    var headers = {
+      Accept: "application/vnd.github+json",
+      Authorization: "Bearer " + token,
+      "X-GitHub-Api-Version": "2022-11-28"
+    };
+
+    var repoRes = await fetch(
       "https://api.github.com/repos/" + GITHUB.owner + "/" + GITHUB.repo,
-      {
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: "Bearer " + token,
-          "X-GitHub-Api-Version": "2022-11-28"
-        }
-      }
+      { headers: headers }
     );
-    if (!res.ok) {
-      var data = null;
+    if (!repoRes.ok) {
+      var repoData = null;
       try {
-        data = await res.json();
+        repoData = await repoRes.json();
       } catch (err) {}
       throw new Error(
-        (data && data.message) ||
-          "GitHub token could not access this repo (" + res.status + ")"
+        friendlyGithubError(
+          (repoData && repoData.message) ||
+            "GitHub token could not access this repo",
+          repoRes.status
+        )
+      );
+    }
+
+    var repoJson = await repoRes.json();
+    if (!repoJson.permissions || !repoJson.permissions.push) {
+      throw new Error(
+        "This token can view the repo but cannot push. Recreate it with " +
+          "write access (classic token: public_repo scope)."
+      );
+    }
+
+    // Confirm Contents API read works (needed before upload/write).
+    var contentsRes = await fetch(
+      "https://api.github.com/repos/" +
+        GITHUB.owner +
+        "/" +
+        GITHUB.repo +
+        "/contents/" +
+        GITHUB.dataPath,
+      { headers: headers }
+    );
+    if (!contentsRes.ok) {
+      var contentsData = null;
+      try {
+        contentsData = await contentsRes.json();
+      } catch (err) {}
+      throw new Error(
+        friendlyGithubError(
+          (contentsData && contentsData.message) ||
+            "Token cannot read catalog-data.js",
+          contentsRes.status
+        )
       );
     }
   }
 
   function parseCatalogData(text) {
-    var cleaned = text
-      .replace(/^\s*window\.ARNI_CATALOG_SEED\s*=\s*/, "")
-      .replace(/;\s*$/, "")
-      .trim();
-    var parsed = JSON.parse(cleaned);
+    var match = String(text).match(
+      /ARNI_CATALOG_SEED\s*=\s*(\[[\s\S]*\])\s*;?\s*$/
+    );
+    if (!match) {
+      throw new Error("Could not find the catalog list in catalog-data.js");
+    }
+
+    var literal = match[1];
+    var parsed;
+    try {
+      // Prefer strict JSON (keys in double quotes).
+      parsed = JSON.parse(literal);
+    } catch (err) {
+      // Fall back for hand-edited JS object literals like { id: "x" }.
+      try {
+        parsed = new Function("return (" + literal + ");")();
+      } catch (err2) {
+        throw new Error(
+          "catalog-data.js could not be parsed. " + (err.message || "")
+        );
+      }
+    }
+
     if (!Array.isArray(parsed)) {
       throw new Error("catalog-data.js did not contain a list");
     }
