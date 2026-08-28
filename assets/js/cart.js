@@ -8,7 +8,7 @@
     keychains: 4,
     bracelets: 5,
     earrings: 3,
-    "hindu-god": 2
+    "hindu-god": 3
   };
 
   var CATEGORY_LABELS = {
