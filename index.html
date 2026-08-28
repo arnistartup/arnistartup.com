@@ -559,6 +559,8 @@
   }
   .catalog-inner { max-width: 1100px; margin: 0 auto; padding: 0 2rem; }
 
+
+
   .catalog-intro {
     max-width: 560px;
     color: #6B5580;
@@ -611,13 +613,7 @@
     transform: translateY(-4px);
     box-shadow: 0 10px 28px rgba(168,85,247,0.15);
   }
-  .catalog-card img {
-    width: 100%;
-    aspect-ratio: 1;
-    object-fit: cover;
-    display: block;
-    background: #FAF5FF;
-  }
+  /* catalog images styled via .catalog-card-media img */
   .catalog-card-meta { padding: 0.85rem 1rem 1rem; }
   .catalog-card-badge {
     display: inline-block;
@@ -677,6 +673,14 @@
     line-height: 1.6;
     margin-bottom: 1.2rem;
   }
+
+  .catalog-upload-fields {
+    margin-bottom: 1rem;
+  }
+  .catalog-upload-fields .catalog-admin-field {
+    margin-bottom: 0;
+  }
+
   .catalog-upload-controls {
     display: flex;
     flex-wrap: wrap;
@@ -877,6 +881,281 @@
     border: 0;
   }
 
+
+  .nav-actions { display: flex; align-items: center; gap: 0.75rem; }
+  .nav-cart-btn {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    border-radius: 50%;
+    border: 2px solid #E9D5FF;
+    background: white;
+    cursor: pointer;
+    font-size: 1.25rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.15s, border-color 0.15s;
+  }
+  .nav-cart-btn:hover { border-color: var(--purple); transform: translateY(-1px); }
+  .nav-cart-btn.is-bump { animation: cartBump 0.35s ease; }
+  @keyframes cartBump {
+    0% { transform: scale(1); }
+    40% { transform: scale(1.12); }
+    100% { transform: scale(1); }
+  }
+  .nav-cart-count {
+    position: absolute;
+    top: -4px;
+    right: -4px;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 5px;
+    border-radius: 100px;
+    background: var(--pink);
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 800;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .catalog-card-media {
+    position: relative;
+  }
+  .catalog-card-media img {
+    width: 100%;
+    aspect-ratio: 1;
+    object-fit: cover;
+    display: block;
+    background: #FAF5FF;
+  }
+  .catalog-card img { /* legacy fallback removed for media wrapper */ }
+  .catalog-cart-btn {
+    position: absolute;
+    right: 0.65rem;
+    bottom: 0.65rem;
+    border: none;
+    border-radius: 100px;
+    background: var(--purple);
+    color: white;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 800;
+    font-size: 0.82rem;
+    padding: 0.45rem 0.85rem;
+    cursor: pointer;
+    box-shadow: 0 4px 14px rgba(168,85,247,0.35);
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+  }
+  .catalog-cart-btn:hover { transform: translateY(-1px); }
+  .catalog-card-price {
+    margin-top: 0.35rem;
+    color: var(--purple);
+    font-weight: 800;
+    font-size: 0.95rem;
+  }
+
+  body.cart-open { overflow: hidden; }
+  .cart-backdrop {
+    position: fixed;
+    inset: 0;
+    background: rgba(45, 27, 78, 0.35);
+    z-index: 200;
+  }
+  .cart-drawer {
+    position: fixed;
+    top: 0;
+    right: 0;
+    width: min(420px, 100%);
+    height: 100%;
+    background: white;
+    z-index: 210;
+    box-shadow: -8px 0 30px rgba(45,27,78,0.15);
+    display: flex;
+    flex-direction: column;
+    padding: 1.25rem 1.25rem 1.5rem;
+    overflow: auto;
+  }
+  .cart-backdrop[hidden],
+  .cart-drawer[hidden] {
+    display: none !important;
+  }
+  .cart-drawer-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+  .cart-drawer-header h2 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1.6rem;
+    color: var(--purple);
+  }
+  .cart-close {
+    border: 2px solid #E9D5FF;
+    background: #FAF5FF;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    cursor: pointer;
+    color: var(--purple);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    transition: background 0.15s, border-color 0.15s, transform 0.15s;
+  }
+  .cart-close:hover {
+    background: white;
+    border-color: var(--purple);
+    transform: translateX(2px);
+  }
+  .cart-close svg {
+    width: 20px;
+    height: 20px;
+    display: block;
+  }
+  .cart-empty {
+    color: #6B5580;
+    font-weight: 700;
+    text-align: center;
+    padding: 2rem 1rem;
+  }
+  .cart-items { display: flex; flex-direction: column; gap: 1rem; }
+  .cart-item {
+    display: grid;
+    grid-template-columns: 72px 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid #F0E8FF;
+  }
+  .cart-item img {
+    width: 72px;
+    height: 72px;
+    object-fit: cover;
+    border-radius: 12px;
+    background: #FAF5FF;
+  }
+  .cart-item-info h3 {
+    font-family: 'Fredoka One', cursive;
+    font-size: 1rem;
+    color: var(--text);
+    margin-bottom: 0.2rem;
+  }
+  .cart-item-meta {
+    color: #6B5580;
+    font-size: 0.82rem;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+  }
+  .cart-item-controls {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    flex-wrap: wrap;
+  }
+  .cart-qty-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 8px;
+    border: 2px solid #E9D5FF;
+    background: white;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .cart-qty {
+    min-width: 1.25rem;
+    text-align: center;
+    font-weight: 800;
+  }
+  .cart-item-remove {
+    border: none;
+    background: none;
+    color: var(--pink);
+    font-weight: 800;
+    font-size: 0.78rem;
+    cursor: pointer;
+    font-family: 'Nunito', sans-serif;
+  }
+  .cart-item-total {
+    font-weight: 800;
+    color: var(--purple);
+    white-space: nowrap;
+  }
+  .cart-summary { margin-top: 1.25rem; }
+  .cart-shipping {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    cursor: pointer;
+  }
+  .cart-totals {
+    background: #FAF5FF;
+    border-radius: 16px;
+    padding: 0.9rem 1rem;
+    margin-bottom: 1rem;
+  }
+  .cart-totals > div {
+    display: flex;
+    justify-content: space-between;
+    font-weight: 700;
+    color: #6B5580;
+    margin-bottom: 0.35rem;
+  }
+  .cart-total-row {
+    color: var(--text) !important;
+    font-size: 1.05rem;
+    margin-top: 0.35rem;
+    padding-top: 0.45rem;
+    border-top: 1px solid #E9D5FF;
+  }
+  .cart-checkout-fields {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+  }
+  .cart-checkout-fields label span {
+    display: block;
+    font-weight: 800;
+    font-size: 0.85rem;
+    margin-bottom: 0.3rem;
+  }
+  .cart-checkout-fields input,
+  .cart-checkout-fields textarea {
+    width: 100%;
+    font-family: 'Nunito', sans-serif;
+    font-weight: 700;
+    font-size: 0.95rem;
+    padding: 0.7rem 0.9rem;
+    border: 2px solid #E9D5FF;
+    border-radius: 12px;
+    background: white;
+    color: var(--text);
+  }
+  .cart-checkout-fields textarea { min-height: 72px; resize: vertical; }
+  .cart-place-btn { width: 100%; text-align: center; justify-content: center; }
+  .cart-status {
+    margin-top: 0.85rem;
+    font-weight: 700;
+    font-size: 0.9rem;
+    line-height: 1.45;
+  }
+  .cart-status.is-busy { color: var(--purple); }
+  .cart-status.is-ok { color: #166534; }
+  .cart-status.is-error { color: #BE185D; }
+
+  @media (max-width: 640px) {
+    .nav-order-button { padding: 0.55rem 1rem; font-size: 0.85rem; }
+  }
+
 </style>
 </head>
 <body>
@@ -886,11 +1165,16 @@
   <div class="nav-logo">Arni<span>★</span></div>
   <ul class="nav-links">
     <li><a href="#about">About us</a></li>
-    <li><a href="#products">What we make</a></li>
     <li><a href="#catalog">Catalog</a></li>
     <li><a href="#order">Place a custom order</a></li>
   </ul>
-  <a href="#order" class="btn-primary nav-order-button">Order now</a>
+  <div class="nav-actions">
+    <button type="button" class="nav-cart-btn is-visible" id="cartOpenBtn" aria-label="Open cart">
+      <span aria-hidden="true">🛒</span>
+      <span class="nav-cart-count" id="cartCount" hidden>0</span>
+    </button>
+    <a href="#order" class="btn-primary nav-order-button">Order now</a>
+  </div>
 </nav>
 
 <!-- HERO -->
@@ -906,7 +1190,7 @@
   <p>We're Arjun &amp; Niya — two young creators making colourful badge pins, magnets, bracelets, and earrings, one piece at a time. Every item is crafted by hand, with love.</p>
   <div class="hero-btns">
     <a href="#order" class="btn-primary">Place a custom order</a>
-    <a href="#products" class="btn-secondary">See what we make</a>
+    <a href="#catalog" class="btn-secondary">See the catalog</a>
   </div>
 </section>
 
@@ -932,60 +1216,12 @@
 </section>
 
 <!-- STATS STRIP -->
-<div class="stats-strip">
-  <div class="stats-inner">
-    <div>
-      <span class="stat-num">100%</span>
-      <span class="stat-label">Handmade</span>
-    </div>
-    <div>
-      <span class="stat-num">3</span>
-      <span class="stat-label">Product lines</span>
-    </div>
-    <div>
-      <span class="stat-num">2</span>
-      <span class="stat-label">Kid founders</span>
-    </div>
-    <div>
-      <span class="stat-num">❤️</span>
-      <span class="stat-label">Made with love</span>
-    </div>
-  </div>
-</div>
-
-<!-- PRODUCTS -->
-<section id="products" class="products-section">
-  <div class="products-inner">
-    <span class="section-label">What we make</span>
-    <h2 class="section-title">Our handmade collection 🎨</h2>
-
-    <div class="products-grid">
-      <div class="product-card p1">
-        <span class="product-icon">📌</span>
-        <div class="product-name">Badge Pins &amp; Magnets</div>
-        <p class="product-desc">Fun, colorful pins and fridge magnets hand-painted with unique designs. Perfect for school bags, jackets, bulletin boards, and gift sets. Great for bulk orders!</p>
-      </div>
-      <div class="product-card p2">
-        <span class="product-icon">📿</span>
-        <div class="product-name">Bracelets</div>
-        <p class="product-desc">Bright, cheerful bracelets handwoven with care. Each one is one-of-a-kind! Available in custom colors and patterns — perfect for parties, friendship gifts, or wedding favours.</p>
-      </div>
-      <div class="product-card p3">
-        <span class="product-icon">✨</span>
-        <div class="product-name">Earrings</div>
-        <p class="product-desc">Adorable handcrafted earrings in all sorts of shapes and colors. Lightweight, fun, and made with love — a wonderful gift for anyone who loves jewelry!</p>
-      </div>
-    </div>
-  </div>
-</section>
-
-
 <!-- CATALOG -->
 <section id="catalog" class="catalog-section">
   <div class="catalog-inner">
     <span class="section-label">Browse our work</span>
     <h2 class="section-title">Catalog ✨</h2>
-    <p class="catalog-intro">Every piece we make, in one place. Browse everything, or filter by badge pins, magnets, keychains, bracelets, and earrings.</p>
+    <p class="catalog-intro">Every piece we make, in one place. Browse everything, or filter by badge pins, magnets, keychains, bracelets, and earrings. Tap Add on a photo, then open the cart icon to place the order.</p>
 
     <div class="catalog-filters" id="catalogFilters" role="tablist" aria-label="Catalog categories"></div>
     <div class="catalog-grid" id="catalogGrid"></div>
@@ -1018,7 +1254,13 @@
           <h3>Add photos to GitHub</h3>
           <button type="button" class="catalog-admin-logout" id="catalogAdminLogout">Log out</button>
         </div>
-        <p>Pick a category, then choose photos. Each photo is saved to <code>assets/catalog/&lt;category&gt;/</code> and added to <code>catalog-data.js</code> so it shows for everyone after GitHub Pages refreshes.</p>
+        <p>Enter a name, pick a category, then choose photos. Each photo is saved to <code>assets/catalog/&lt;category&gt;/</code> and added to <code>catalog-data.js</code> so it shows for everyone after GitHub Pages refreshes.</p>
+        <div class="catalog-upload-fields">
+          <label class="catalog-admin-field">
+            <span>Name</span>
+            <input id="catalogUploadName" type="text" maxlength="80" placeholder="e.g. Friendship bracelet" autocomplete="off">
+          </label>
+        </div>
         <div class="catalog-upload-controls">
           <label>
             <span class="visually-hidden">Category</span>
@@ -1143,6 +1385,51 @@
     </div>
   </div>
 </section>
+
+
+<!-- CART -->
+<div class="cart-backdrop" id="cartBackdrop" hidden></div>
+<aside class="cart-drawer" id="cartDrawer" hidden aria-label="Shopping cart">
+  <div class="cart-drawer-header">
+    <h2>Your cart</h2>
+    <button type="button" class="cart-close" id="cartCloseBtn" aria-label="Collapse cart" title="Collapse cart">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+      </svg>
+    </button>
+  </div>
+  <p class="cart-empty" id="cartEmpty">Your cart is empty. Add items from the catalog.</p>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-summary" id="cartSummary" hidden>
+    <label class="cart-shipping">
+      <input type="checkbox" id="cartShipping">
+      Add shipping (+$8)
+    </label>
+    <div class="cart-totals">
+      <div><span>Subtotal</span><strong id="cartSubtotal">$0.00</strong></div>
+      <div><span>Shipping</span><strong id="cartShippingCost">$0.00</strong></div>
+      <div class="cart-total-row"><span>Total</span><strong id="cartTotal">$0.00</strong></div>
+    </div>
+    <div class="cart-checkout-fields">
+      <label>
+        <span>Your name *</span>
+        <input type="text" id="cartName" placeholder="e.g. Niya Vardha" autocomplete="name">
+      </label>
+      <label>
+        <span>Your email *</span>
+        <input type="email" id="cartEmail" placeholder="you@email.com" autocomplete="email">
+      </label>
+      <label>
+        <span>Notes</span>
+        <textarea id="cartNotes" placeholder="Color preference, gift note, etc."></textarea>
+      </label>
+      <input class="honeypot" type="text" id="cartWebsite" name="cart-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    </div>
+    <button type="button" class="btn-primary cart-place-btn" id="cartPlaceOrder">Place order</button>
+    <p class="cart-status" id="cartStatus" hidden></p>
+  </div>
+</aside>
 
 <!-- FOOTER -->
 <footer>
@@ -1310,6 +1597,7 @@
 </script>
 
 <script src="assets/js/catalog-data.js"></script>
+<script src="assets/js/cart.js"></script>
 <script src="assets/js/catalog.js"></script>
 </body>
 </html>

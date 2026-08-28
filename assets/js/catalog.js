@@ -45,6 +45,7 @@
   var fileInput = document.getElementById("catalogFileInput");
   var uploadLabel = document.getElementById("catalogUploadLabel");
   var categorySelect = document.getElementById("catalogUploadCategory");
+  var nameInput = document.getElementById("catalogUploadName");
   var adminOpen = document.getElementById("catalogAdminOpen");
   var adminLogin = document.getElementById("catalogAdminLogin");
   var adminPassword = document.getElementById("catalogAdminPassword");
@@ -420,10 +421,37 @@
       card.className = "catalog-card";
       card.setAttribute("data-category", item.category);
 
+      var media = document.createElement("div");
+      media.className = "catalog-card-media";
+
       var img = document.createElement("img");
       img.src = item.src;
       img.alt = item.title || "Catalog item";
       img.loading = "lazy";
+
+      var addBtn = document.createElement("button");
+      addBtn.type = "button";
+      addBtn.className = "catalog-cart-btn";
+      addBtn.setAttribute(
+        "aria-label",
+        "Add " + (item.title || "item") + " to cart"
+      );
+      addBtn.innerHTML = '<span aria-hidden="true">🛒</span> Add';
+      addBtn.addEventListener("click", function (e) {
+        e.preventDefault();
+        e.stopPropagation();
+        if (window.ArniCart) {
+          if (typeof window.ArniCart.showForCatalog === "function") {
+            window.ArniCart.showForCatalog();
+          }
+          if (typeof window.ArniCart.addItem === "function") {
+            window.ArniCart.addItem(item);
+          }
+        }
+      });
+
+      media.appendChild(img);
+      media.appendChild(addBtn);
 
       var meta = document.createElement("div");
       meta.className = "catalog-card-meta";
@@ -436,8 +464,17 @@
       title.className = "catalog-card-title";
       title.textContent = item.title || "Handmade piece";
 
+      var price = document.createElement("p");
+      price.className = "catalog-card-price";
+      var unit =
+        window.ArniCart && window.ArniCart.priceForCategory
+          ? window.ArniCart.priceForCategory(item.category)
+          : 0;
+      price.textContent = unit ? "$" + unit.toFixed(2) : "";
+
       meta.appendChild(badge);
       meta.appendChild(title);
+      if (unit) meta.appendChild(price);
 
       if (isAdmin) {
         var remove = document.createElement("button");
@@ -451,7 +488,7 @@
         meta.appendChild(remove);
       }
 
-      card.appendChild(img);
+      card.appendChild(media);
       card.appendChild(meta);
       grid.appendChild(card);
     });
@@ -509,12 +546,21 @@
     }
   }
 
+  function titleForUpload(file, index, total) {
+    var custom = nameInput ? nameInput.value.trim() : "";
+    if (custom) {
+      if (total > 1) return custom + " " + (index + 1);
+      return custom;
+    }
+    return titleFromFile(file);
+  }
+
   async function uploadOneFile(file, category, index, total) {
     var compressed = await compressImage(file);
     var stem = safeFileStem(file.name);
     var filename = stem + "-" + Date.now() + compressed.ext;
     var imagePath = "assets/catalog/" + category + "/" + filename;
-    var title = titleFromFile(file);
+    var title = titleForUpload(file, index, total);
     var id = category + "-" + stem + "-" + Date.now() + "-" + index;
 
     setStatus(
@@ -582,6 +628,7 @@
       for (var i = 0; i < files.length; i++) {
         await uploadOneFile(files[i], category, i, files.length);
       }
+      if (nameInput) nameInput.value = "";
       activeFilter = "all";
       renderFilters();
       renderGrid();

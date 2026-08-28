@@ -19,7 +19,7 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "earrings-image-from-ios-4-1787935664273-0",
-    "title": "Image From IOS (4)",
+    "title": "4th of July Earrings",
     "category": "earrings",
     "src": "assets/catalog/earrings/image-from-ios-4-1787935664273.jpg"
   }
