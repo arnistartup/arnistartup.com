@@ -22,11 +22,5 @@ window.ARNI_CATALOG_SEED = [
     "title": "4th of July Earrings",
     "category": "earrings",
     "src": "assets/catalog/earrings/image-from-ios-4-1787935664273.jpg"
-  },
-  {
-    "id": "badge-pins-img-0269-1787941667390-0",
-    "title": "IMG 0269",
-    "category": "badge-pins",
-    "src": "assets/catalog/badge-pins/img-0269-1787941667390.jpg"
   }
 ];
