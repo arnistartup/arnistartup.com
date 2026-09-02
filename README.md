@@ -10,7 +10,8 @@ Create a token in GitHub → **Settings** → **Developer settings** → **Perso
 
 Photos upload to ImgBB on submit (`assets/js/reviews-imgbb-config.js`).
 
-1. Visitor submits review + photo → you get an email with the photo link.
-2. **Reviews → Admin login** → **Approve & publish**.
-3. Or **Publish manually** with a photo file or the ImgBB URL from the email.
-4. **Delete** removes a published review from the site.
+1. Visitor: **Write a review** (name, email, review, photo).
+2. You get an email with the photo URL.
+3. **Approve review** → log in — the form becomes publish mode.
+4. Paste name, review, and photo URL (or attach a file), then **Publish review**.
+5. **Delete** on a published card removes it from the site.

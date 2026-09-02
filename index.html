@@ -673,6 +673,9 @@
     text-align: left;
     margin-bottom: 0.85rem;
   }
+  .catalog-admin-field[hidden] {
+    display: none !important;
+  }
   .catalog-admin-field span {
     display: block;
     font-weight: 800;
@@ -1128,16 +1131,13 @@
     font-size: 1.4rem;
     margin-bottom: 0.35rem;
   }
-  .review-form-card > p {
-    color: #6B5580;
-    font-weight: 600;
-    margin-bottom: 1.2rem;
-    line-height: 1.55;
-  }
   .review-form-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.85rem;
+  }
+  .review-form-grid.is-admin-publish {
+    grid-template-columns: 1fr;
   }
   .review-form-card textarea {
     width: 100%;
@@ -1179,58 +1179,7 @@
   .reviews-status.is-busy { color: var(--purple); }
   .reviews-status.is-ok { color: #166534; }
   .reviews-status.is-error { color: #BE185D; }
-  .reviews-admin-panel {
-    background: white;
-    border: 3px dashed #D8B4FE;
-    border-radius: 24px;
-    padding: 1.5rem;
-    text-align: left;
-  }
-  .reviews-admin-panel > p {
-    color: #6B5580;
-    font-weight: 600;
-    margin-bottom: 1rem;
-  }
-  .reviews-pending-list {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  .review-pending-card {
-    display: grid;
-    grid-template-columns: 96px 1fr;
-    gap: 0.9rem;
-    padding: 0.9rem;
-    border: 2px solid #F0E8FF;
-    border-radius: 16px;
-    background: #FAF5FF;
-  }
-  .review-pending-card img {
-    width: 96px;
-    height: 96px;
-    object-fit: cover;
-    border-radius: 12px;
-  }
-  .review-pending-info h4 {
-    font-family: 'Fredoka One', cursive;
-    font-size: 1rem;
-    margin-bottom: 0.35rem;
-    color: var(--text);
-  }
-  .review-pending-info p {
-    color: #6B5580;
-    font-weight: 600;
-    font-size: 0.92rem;
-    line-height: 1.45;
-    margin-bottom: 0.7rem;
-  }
-  .review-pending-actions {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-    align-items: center;
-  }
-  .review-reject-btn {
+  .review-delete-btn {
     border: 2px solid #FFCCE8;
     background: white;
     color: var(--pink);
@@ -1242,31 +1191,6 @@
   }
   @media (max-width: 640px) {
     .review-form-grid { grid-template-columns: 1fr; }
-    .review-pending-card { grid-template-columns: 1fr; }
-  }
-
-  .review-manual-publish {
-    margin-top: 1.5rem;
-    padding-top: 1.25rem;
-    border-top: 2px dashed #E9D5FF;
-  }
-  .review-manual-publish h4 {
-    font-family: 'Fredoka One', cursive;
-    color: var(--purple);
-    margin-bottom: 0.85rem;
-  }
-  .review-manual-publish textarea {
-    width: 100%;
-    min-height: 90px;
-    font-family: 'Nunito', sans-serif;
-    font-weight: 700;
-    font-size: 1rem;
-    padding: 0.75rem 1rem;
-    border: 2px solid #E9D5FF;
-    border-radius: 12px;
-    background: #FAF5FF;
-    color: var(--text);
-    resize: vertical;
   }
 
 </style>
@@ -1451,26 +1375,32 @@
     <p class="reviews-empty" id="reviewsEmpty" hidden></p>
 
     <div class="review-form-card">
-      <h3>Write a review</h3>
-      <p>Tell us what you loved — and attach a photo of our handmade piece.</p>
+      <div class="catalog-upload-header">
+        <h3 id="reviewFormTitle">Write a review</h3>
+        <button type="button" class="catalog-admin-logout" id="reviewsFormLogout" hidden>Log out</button>
+      </div>
       <form id="reviewForm">
         <div class="review-form-grid">
           <label class="catalog-admin-field">
-            <span>Your name *</span>
+            <span id="reviewNameLabel">Your name *</span>
             <input id="reviewName" type="text" required maxlength="60" placeholder="e.g. Arjun Vardha" autocomplete="name">
           </label>
-          <label class="catalog-admin-field">
+          <label class="catalog-admin-field" id="reviewEmailField">
             <span>Your email *</span>
             <input id="reviewEmail" type="email" required placeholder="you@email.com" autocomplete="email">
           </label>
         </div>
         <label class="catalog-admin-field">
-          <span>Your review *</span>
+          <span id="reviewTextLabel">Your review *</span>
           <textarea id="reviewText" required maxlength="500" placeholder="We loved our custom badges!"></textarea>
         </label>
         <label class="catalog-admin-field">
-          <span>Photo * (required)</span>
+          <span id="reviewPhotoLabel">Photo *</span>
           <input id="reviewImage" type="file" accept="image/*" required>
+        </label>
+        <label class="catalog-admin-field" id="reviewImageUrlField" hidden>
+          <span>Or photo URL</span>
+          <input id="reviewImageUrl" type="url" placeholder="https://i.ibb.co/...">
         </label>
         <img id="reviewImagePreview" class="review-image-preview" alt="" hidden>
         <input class="honeypot" type="text" id="reviewWebsite" name="review-website" tabindex="-1" autocomplete="off" aria-hidden="true">
@@ -1480,11 +1410,10 @@
     </div>
 
     <div class="catalog-admin">
-      <button type="button" class="catalog-admin-link" id="reviewsAdminOpen">Admin login to approve reviews</button>
+      <button type="button" class="catalog-admin-link" id="reviewsAdminOpen">Approve review</button>
 
       <form class="catalog-admin-login" id="reviewsAdminLogin" hidden>
-        <h3>Admin login</h3>
-        <p>Approve pending reviews and publish them to the live site.</p>
+        <h3>Approve review</h3>
         <label class="catalog-admin-field">
           <input id="reviewsAdminPassword" type="password" autocomplete="current-password" placeholder="Admin password" aria-label="Admin password" required>
         </label>
@@ -1497,38 +1426,6 @@
         <p class="catalog-admin-error" id="reviewsAdminError" hidden></p>
         <button type="button" class="catalog-admin-cancel" id="reviewsAdminCancel">Cancel</button>
       </form>
-
-      <div class="reviews-admin-panel" id="reviewsAdminPanel" hidden>
-        <div class="catalog-upload-header">
-          <h3>Approve reviews</h3>
-          <button type="button" class="catalog-admin-logout" id="reviewsAdminLogout">Log out</button>
-        </div>
-        <p>Pending reviews appear here after someone submits. You can also publish manually below.</p>
-        <p class="reviews-empty" id="reviewsPendingEmpty" hidden></p>
-        <div id="reviewsPendingList" class="reviews-pending-list"></div>
-
-        <form id="reviewsManualPublish" class="review-manual-publish">
-          <h4>Publish manually</h4>
-          <label class="catalog-admin-field">
-            <span>Reviewer name *</span>
-            <input id="manualReviewName" type="text" required maxlength="60">
-          </label>
-          <label class="catalog-admin-field">
-            <span>Review text *</span>
-            <textarea id="manualReviewText" required maxlength="500"></textarea>
-          </label>
-          <label class="catalog-admin-field">
-            <span>Photo file</span>
-            <input id="manualReviewImage" type="file" accept="image/*">
-          </label>
-          <label class="catalog-admin-field">
-            <span>Or photo URL (from email / ImgBB)</span>
-            <input id="manualReviewImageUrl" type="url" placeholder="https://i.ibb.co/...">
-          </label>
-          <button type="submit" class="btn-primary">Publish review</button>
-        </form>
-        <p class="reviews-status" id="reviewsPublishStatus" hidden></p>
-      </div>
     </div>
   </div>
 </section>
