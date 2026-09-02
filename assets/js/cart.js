@@ -7,7 +7,8 @@
     magnets: 3,
     keychains: 4,
     bracelets: 5,
-    earrings: 3
+    earrings: 3,
+    "hindu-god": 2
   };
 
   var CATEGORY_LABELS = {
@@ -15,7 +16,8 @@
     magnets: "Magnets",
     keychains: "Keychains",
     bracelets: "Bracelets",
-    earrings: "Earrings"
+    earrings: "Earrings",
+    "hindu-god": "Hindu God"
   };
 
   var cart = loadCart();

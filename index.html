@@ -1329,7 +1329,7 @@
   <div class="catalog-inner">
     <span class="section-label">Browse our work</span>
     <h2 class="section-title">Catalog ✨</h2>
-    <p class="catalog-intro">Browse everything, or filter by badge pins, magnets, keychains, bracelets, and earrings. Tap Add on a photo, then open the cart icon to place the order.</p>
+    <p class="catalog-intro">Browse everything, or filter by badge pins, magnets, keychains, bracelets, earrings, and Hindu God. Tap Add on a photo, then open the cart icon to place the order.</p>
 
     <div class="catalog-filters" id="catalogFilters" role="tablist" aria-label="Catalog categories"></div>
     <div class="catalog-grid" id="catalogGrid"></div>
@@ -1374,6 +1374,7 @@
               <option value="keychains">Keychains</option>
               <option value="bracelets">Bracelets</option>
               <option value="earrings">Earrings</option>
+              <option value="hindu-god">Hindu God</option>
             </select>
           </label>
           <label class="btn-primary catalog-upload-label" id="catalogUploadLabel">
@@ -1555,6 +1556,11 @@
             <input type="checkbox" class="product-check" value="Bracelets" data-price="5" onchange="toggleProduct(this)">
             <span><span class="product-option-name">Bracelets</span><br><span class="product-option-price">$5 each</span></span>
             <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Bracelets quantity" disabled oninput="updatePrice()">
+          </label>
+          <label class="product-option">
+            <input type="checkbox" class="product-check" value="Hindu God" data-price="2" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Hindu God</span><br><span class="product-option-price">$2 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Hindu God quantity" disabled oninput="updatePrice()">
           </label>
         </div>
       </div>

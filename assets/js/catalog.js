@@ -17,7 +17,8 @@
     { id: "magnets", label: "Magnets" },
     { id: "keychains", label: "Keychains" },
     { id: "bracelets", label: "Bracelets" },
-    { id: "earrings", label: "Earrings" }
+    { id: "earrings", label: "Earrings" },
+    { id: "hindu-god", label: "Hindu God" }
   ];
 
   var UPLOAD_CATEGORIES = CATEGORIES.filter(function (cat) {
