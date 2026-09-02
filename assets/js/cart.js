@@ -7,9 +7,20 @@
     magnets: 3,
     keychains: 4,
     bracelets: 5,
-    earrings: 3,
-    "hindu-god": 3
+    earrings: 3
   };
+
+  var TYPE_PRICES = {
+    pin: 2,
+    magnet: 3
+  };
+
+  var TYPE_LABELS = {
+    pin: "Pin",
+    magnet: "Magnet"
+  };
+
+  var THEME_CATEGORIES = ["hindu-god", "happy-birthday"];
 
   var CATEGORY_LABELS = {
     "badge-pins": "Badge pins",
@@ -17,7 +28,8 @@
     keychains: "Keychains",
     bracelets: "Bracelets",
     earrings: "Earrings",
-    "hindu-god": "Hindu God"
+    "hindu-god": "Hindu God",
+    "happy-birthday": "Happy Birthday"
   };
 
   var cart = loadCart();
@@ -55,8 +67,23 @@
     updateCount();
   }
 
-  function priceForCategory(category) {
+  function priceForCategory(category, productType) {
+    if (THEME_CATEGORIES.indexOf(category) !== -1) {
+      return TYPE_PRICES[productType] || TYPE_PRICES.magnet;
+    }
     return CATEGORY_PRICES[category] || 0;
+  }
+
+  function isThemeCategory(category) {
+    return THEME_CATEGORIES.indexOf(category) !== -1;
+  }
+
+  function labelForItem(item) {
+    var typeLabel = TYPE_LABELS[item.productType];
+    if (isThemeCategory(item.category) && typeLabel) {
+      return typeLabel;
+    }
+    return CATEGORY_LABELS[item.category] || item.category || "";
   }
 
   function cartCount() {
@@ -126,14 +153,16 @@
     if (existing) {
       existing.quantity += 1;
     } else {
-      cart.push({
+      var entry = {
         id: item.id,
         title: item.title || "Handmade piece",
         category: item.category,
         src: item.src,
-        unitPrice: priceForCategory(item.category),
+        unitPrice: priceForCategory(item.category, item.productType),
         quantity: 1
-      });
+      };
+      if (item.productType) entry.productType = item.productType;
+      cart.push(entry);
     }
     saveCart();
     renderCart();
@@ -197,10 +226,7 @@
       var meta = document.createElement("p");
       meta.className = "cart-item-meta";
       meta.textContent =
-        (CATEGORY_LABELS[item.category] || item.category) +
-        " · $" +
-        item.unitPrice.toFixed(2) +
-        " each";
+        labelForItem(item) + " · $" + item.unitPrice.toFixed(2) + " each";
 
       var controls = document.createElement("div");
       controls.className = "cart-item-controls";
@@ -377,7 +403,9 @@
 
   window.ArniCart = {
     addItem: addItem,
-    priceForCategory: priceForCategory
+    priceForCategory: priceForCategory,
+    labelForItem: labelForItem,
+    isThemeCategory: isThemeCategory
   };
 
   updateCount();

@@ -24,12 +24,6 @@ window.ARNI_CATALOG_SEED = [
     "src": "assets/catalog/earrings/image-from-ios-4-1787935664273.jpg"
   },
   {
-    "id": "badge-pins-img-1229-1787949001690-0",
-    "title": "Father’s day",
-    "category": "badge-pins",
-    "src": "assets/catalog/badge-pins/img-1229-1787949001690.jpg"
-  },
-  {
     "id": "badge-pins-img-1232-1787949025655-0",
     "title": "Unicorn",
     "category": "badge-pins",
@@ -40,12 +34,6 @@ window.ARNI_CATALOG_SEED = [
     "title": "Star",
     "category": "magnets",
     "src": "assets/catalog/magnets/img-1278-1787949353515.jpg"
-  },
-  {
-    "id": "magnets-img-1276-1787949427603-0",
-    "title": "Happy birthday",
-    "category": "magnets",
-    "src": "assets/catalog/magnets/img-1276-1787949427603.jpg"
   },
   {
     "id": "bracelets-img-1135-1787949999722-0",
@@ -294,9 +282,231 @@ window.ARNI_CATALOG_SEED = [
     "src": "assets/catalog/badge-pins/img-1212-1787952614916.jpg"
   },
   {
-    "id": "hindu-god-lord-venkateswara",
+    "id": "keychains-img-1339-1788181995987-0",
+    "title": "Panda 1",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1339-1788181995987.jpg"
+  },
+  {
+    "id": "keychains-img-1341-1788183800564-0",
+    "title": "Smile, face",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1341-1788183800564.jpg"
+  },
+  {
+    "id": "keychains-img-1340-1788184022923-0",
+    "title": "Cat",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1340-1788184022923.jpg"
+  },
+  {
+    "id": "keychains-img-1337-1788184105312-0",
+    "title": "Hello kitty",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1337-1788184105312.jpg"
+  },
+  {
+    "id": "keychains-img-1328-1788184154034-0",
+    "title": "Butterfly",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1328-1788184154034.jpg"
+  },
+  {
+    "id": "keychains-img-1314-1788184275716-0",
+    "title": "Forever, my always my Mom",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1314-1788184275716.jpg"
+  },
+  {
+    "id": "keychains-img-1334-1788184328096-0",
+    "title": "Every day is an adventure",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1334-1788184328096.jpg"
+  },
+  {
+    "id": "keychains-img-1335-1788184376639-0",
+    "title": "Ice cream",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1335-1788184376639.jpg"
+  },
+  {
+    "id": "keychains-img-1325-1788184623111-0",
+    "title": "Good job",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1325-1788184623111.jpg"
+  },
+  {
+    "id": "keychains-img-1323-1788184674011-0",
+    "title": "You did it",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1323-1788184674011.jpg"
+  },
+  {
+    "id": "keychains-img-1317-1788184961967-0",
+    "title": "Be brave",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1317-1788184961967.jpg"
+  },
+  {
+    "id": "keychains-img-1331-1788185045314-0",
+    "title": "Bee kind bee Happy",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1331-1788185045314.jpg"
+  },
+  {
+    "id": "keychains-img-1332-1788185120577-0",
+    "title": "Happy camper New Hampshire",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1332-1788185120577.jpg"
+  },
+  {
+    "id": "keychains-img-1322-1788185195990-0",
+    "title": "Hello sunshine",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1322-1788185195990.jpg"
+  },
+  {
+    "id": "keychains-img-1321-1788185247292-0",
+    "title": "Tiny superhero",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1321-1788185247292.jpg"
+  },
+  {
+    "id": "keychains-img-1319-1788185271379-0",
+    "title": "Little hero",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1319-1788185271379.jpg"
+  },
+  {
+    "id": "keychains-img-1315-1788185302140-0",
+    "title": "Rainbow",
+    "category": "keychains",
+    "src": "assets/catalog/keychains/img-1315-1788185302140.jpg"
+  },
+  {
+    "id": "happy-birthday-img-1305-1788225377420-0",
+    "title": "spaceship",
+    "category": "happy-birthday",
+    "src": "assets/catalog/happy-birthday/img-1305-1788225377419.jpg",
+    "productType": "pin"
+  },
+  {
+    "id": "happy-birthday-img-1301-1788266366467-0",
+    "title": "Cake",
+    "category": "happy-birthday",
+    "src": "assets/catalog/happy-birthday/img-1301-1788266366467.jpg",
+    "productType": "pin"
+  },
+  {
+    "id": "happy-birthday-img-1296-1788266427505-0",
+    "title": "Cupcakes",
+    "category": "happy-birthday",
+    "src": "assets/catalog/happy-birthday/img-1296-1788266427505.jpg",
+    "productType": "pin"
+  },
+  {
+    "id": "happy-birthday-img-1304-1788266588197-0",
+    "title": "Unicorn 1",
+    "category": "happy-birthday",
+    "src": "assets/catalog/happy-birthday/img-1304-1788266588197.jpg",
+    "productType": "pin"
+  },
+  {
+    "id": "happy-birthday-img-1298-1788266591319-1",
+    "title": "Unicorn 2",
+    "category": "happy-birthday",
+    "src": "assets/catalog/happy-birthday/img-1298-1788266591319.jpg",
+    "productType": "pin"
+  },
+  {
+    "id": "happy-birthday-img-1293-1788266682337-0",
+    "title": "Cake",
+    "category": "happy-birthday",
+    "src": "assets/catalog/happy-birthday/img-1293-1788266682337.jpg",
+    "productType": "pin"
+  },
+  {
+    "id": "happy-birthday-img-1368-1788266819051-0",
+    "title": "Present",
+    "category": "happy-birthday",
+    "src": "assets/catalog/happy-birthday/img-1368-1788266819050.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1385-1788267850456-0",
+    "title": "Saibaba",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1385-1788267850456.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1386-1788268021608-0",
+    "title": "Shiva",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1386-1788268021608.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1373-1788268099058-0",
+    "title": "Karthikeya",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1373-1788268099058.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1382-1788268336676-0",
+    "title": "Saraswati",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1382-1788268336676.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1383-1788268421150-0",
+    "title": "Vishnu",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1383-1788268421149.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1379-1788268481617-0",
+    "title": "Baby krishna",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1379-1788268481617.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1378-1788268625738-0",
     "title": "Lord Venkateswara",
     "category": "hindu-god",
-    "src": "assets/catalog/hindu-god/lord-venkateswara.jpg"
+    "src": "assets/catalog/hindu-god/img-1378-1788268625738.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1380-1788268741161-0",
+    "title": "Laxmi",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1380-1788268741161.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1381-1788268890822-0",
+    "title": "Ganesha",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1381-1788268890822.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1376-1788268979495-0",
+    "title": "Ramakrishna",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1376-1788268979495.jpg",
+    "productType": "magnet"
+  },
+  {
+    "id": "hindu-god-img-1377-1788269026627-0",
+    "title": "Krishna",
+    "category": "hindu-god",
+    "src": "assets/catalog/hindu-god/img-1377-1788269026627.jpg",
+    "productType": "magnet"
   }
 ];

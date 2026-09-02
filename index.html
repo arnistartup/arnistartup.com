@@ -550,6 +550,13 @@
     box-shadow: 0 10px 28px rgba(168,85,247,0.15);
   }
   .catalog-card-meta { padding: 0.85rem 1rem 1rem; }
+  .catalog-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.4rem;
+    margin-bottom: 0.4rem;
+  }
   .catalog-card-badge {
     display: inline-block;
     font-size: 0.72rem;
@@ -560,7 +567,6 @@
     background: #F3E8FF;
     padding: 0.2rem 0.55rem;
     border-radius: 100px;
-    margin-bottom: 0.4rem;
   }
   .catalog-card-title {
     font-family: 'Fredoka One', cursive;
@@ -820,9 +826,6 @@
     justify-content: center;
   }
 
-  .catalog-card-media {
-    position: relative;
-  }
   .catalog-card-media img {
     width: 100%;
     aspect-ratio: 1;
@@ -831,22 +834,17 @@
     background: #FAF5FF;
   }
   .catalog-cart-btn {
-    position: absolute;
-    right: 0.65rem;
-    bottom: 0.65rem;
+    flex-shrink: 0;
     border: none;
     border-radius: 100px;
     background: var(--purple);
     color: white;
     font-family: 'Nunito', sans-serif;
     font-weight: 800;
-    font-size: 0.82rem;
-    padding: 0.45rem 0.85rem;
+    font-size: 0.7rem;
+    padding: 0.2rem 0.55rem;
     cursor: pointer;
-    box-shadow: 0 4px 14px rgba(168,85,247,0.35);
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
+    line-height: 1.2;
   }
   .catalog-cart-btn:hover { transform: translateY(-1px); }
   .catalog-card-price {
@@ -1069,7 +1067,10 @@
     gap: 1.25rem;
     margin-bottom: 2.5rem;
   }
-  #reviews { scroll-margin-top: 100px; }
+  #about,
+  #catalog,
+  #reviews,
+  #order { scroll-margin-top: 100px; }
   .review-card {
     background: white;
     border: 2px solid #F0E8FF;
@@ -1329,7 +1330,7 @@
   <div class="catalog-inner">
     <span class="section-label">Browse our work</span>
     <h2 class="section-title">Catalog ✨</h2>
-    <p class="catalog-intro">Browse everything, or filter by badge pins, magnets, keychains, bracelets, earrings, and Hindu God. Tap Add on a photo, then open the cart icon to place the order.</p>
+    <p class="catalog-intro">Browse everything, or filter by badge pins, magnets, keychains, bracelets, earrings, Hindu God, and Happy Birthday. Tap + Add on an item, then open the cart icon to place the order.</p>
 
     <div class="catalog-filters" id="catalogFilters" role="tablist" aria-label="Catalog categories"></div>
     <div class="catalog-grid" id="catalogGrid"></div>
@@ -1358,7 +1359,7 @@
           <h3>Add photos to GitHub</h3>
           <button type="button" class="catalog-admin-logout" id="catalogAdminLogout">Log out</button>
         </div>
-        <p>Enter a name, pick a category, then choose photos. Each photo is saved to <code>assets/catalog/&lt;category&gt;/</code> and added to <code>catalog-data.js</code> so it shows for everyone after GitHub Pages refreshes.</p>
+        <p>Enter a name, pick a category, then choose photos. For Hindu God or Happy Birthday, also choose Pin or Magnet. Each photo is saved to <code>assets/catalog/&lt;category&gt;/</code> and added to <code>catalog-data.js</code> so it shows for everyone after GitHub Pages refreshes.</p>
         <div class="catalog-upload-fields">
           <label class="catalog-admin-field">
             <span>Name *</span>
@@ -1375,6 +1376,15 @@
               <option value="bracelets">Bracelets</option>
               <option value="earrings">Earrings</option>
               <option value="hindu-god">Hindu God</option>
+              <option value="happy-birthday">Happy Birthday</option>
+            </select>
+          </label>
+          <label id="catalogUploadTypeWrap" hidden>
+            <span class="visually-hidden">Type</span>
+            <select id="catalogUploadType" aria-label="Pin or magnet">
+              <option value="">Pin or magnet?</option>
+              <option value="pin">Pin</option>
+              <option value="magnet">Magnet</option>
             </select>
           </label>
           <label class="btn-primary catalog-upload-label" id="catalogUploadLabel">
@@ -1538,9 +1548,9 @@
         <label>What would you like to order? Select one or more. *</label>
         <div class="product-options">
           <label class="product-option">
-            <input type="checkbox" class="product-check" value="Badge Pins" data-price="2" onchange="toggleProduct(this)">
-            <span><span class="product-option-name">Badge Pins</span><br><span class="product-option-price">$2 each</span></span>
-            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Badge Pins quantity" disabled oninput="updatePrice()">
+            <input type="checkbox" class="product-check" value="Badge pins" data-price="2" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Badge pins</span><br><span class="product-option-price">$2 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Badge pins quantity" disabled oninput="updatePrice()">
           </label>
           <label class="product-option">
             <input type="checkbox" class="product-check" value="Magnets" data-price="3" onchange="toggleProduct(this)">
@@ -1548,9 +1558,9 @@
             <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Magnets quantity" disabled oninput="updatePrice()">
           </label>
           <label class="product-option">
-            <input type="checkbox" class="product-check" value="Earrings" data-price="3" onchange="toggleProduct(this)">
-            <span><span class="product-option-name">Earrings</span><br><span class="product-option-price">$3 each</span></span>
-            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Earrings quantity" disabled oninput="updatePrice()">
+            <input type="checkbox" class="product-check" value="Keychains" data-price="4" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Keychains</span><br><span class="product-option-price">$4 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Keychains quantity" disabled oninput="updatePrice()">
           </label>
           <label class="product-option">
             <input type="checkbox" class="product-check" value="Bracelets" data-price="5" onchange="toggleProduct(this)">
@@ -1558,9 +1568,19 @@
             <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Bracelets quantity" disabled oninput="updatePrice()">
           </label>
           <label class="product-option">
+            <input type="checkbox" class="product-check" value="Earrings" data-price="3" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Earrings</span><br><span class="product-option-price">$3 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Earrings quantity" disabled oninput="updatePrice()">
+          </label>
+          <label class="product-option">
             <input type="checkbox" class="product-check" value="Hindu God" data-price="3" onchange="toggleProduct(this)">
             <span><span class="product-option-name">Hindu God</span><br><span class="product-option-price">$3 each</span></span>
             <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Hindu God quantity" disabled oninput="updatePrice()">
+          </label>
+          <label class="product-option">
+            <input type="checkbox" class="product-check" value="Happy Birthday" data-price="3" onchange="toggleProduct(this)">
+            <span><span class="product-option-name">Happy Birthday</span><br><span class="product-option-price">$3 each</span></span>
+            <input type="number" class="product-qty" min="1" placeholder="Qty" aria-label="Happy Birthday quantity" disabled oninput="updatePrice()">
           </label>
         </div>
       </div>

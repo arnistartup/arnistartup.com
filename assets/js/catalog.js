@@ -18,7 +18,8 @@
     { id: "keychains", label: "Keychains" },
     { id: "bracelets", label: "Bracelets" },
     { id: "earrings", label: "Earrings" },
-    { id: "hindu-god", label: "Hindu God" }
+    { id: "hindu-god", label: "Hindu God" },
+    { id: "happy-birthday", label: "Happy Birthday" }
   ];
 
   var UPLOAD_CATEGORIES = CATEGORIES.filter(function (cat) {
@@ -26,11 +27,6 @@
   }).map(function (cat) {
     return cat.id;
   });
-
-  var categoryLabels = CATEGORIES.reduce(function (map, cat) {
-    map[cat.id] = cat.label;
-    return map;
-  }, {});
 
   var activeFilter = "all";
   var seedItems = Array.isArray(window.ARNI_CATALOG_SEED)
@@ -46,6 +42,8 @@
   var fileInput = document.getElementById("catalogFileInput");
   var uploadLabel = document.getElementById("catalogUploadLabel");
   var categorySelect = document.getElementById("catalogUploadCategory");
+  var typeSelect = document.getElementById("catalogUploadType");
+  var typeWrap = document.getElementById("catalogUploadTypeWrap");
   var nameInput = document.getElementById("catalogUploadName");
   var adminOpen = document.getElementById("catalogAdminOpen");
   var adminLogin = document.getElementById("catalogAdminLogin");
@@ -58,6 +56,35 @@
   var statusEl = document.getElementById("catalogUploadStatus");
 
   if (!grid || !filters) return;
+
+  function isThemeCategory(category) {
+    return !!(
+      window.ArniCart &&
+      typeof window.ArniCart.isThemeCategory === "function" &&
+      window.ArniCart.isThemeCategory(category)
+    );
+  }
+
+  function syncTypeSelect() {
+    var category = categorySelect ? categorySelect.value : "";
+    var needsType = isThemeCategory(category);
+    if (typeWrap) typeWrap.hidden = !needsType;
+    if (typeSelect && !needsType) typeSelect.value = "";
+  }
+
+  function badgeLabelForItem(item) {
+    if (window.ArniCart && typeof window.ArniCart.labelForItem === "function") {
+      return window.ArniCart.labelForItem(item);
+    }
+    return item.category || "";
+  }
+
+  function priceForItem(item) {
+    if (window.ArniCart && typeof window.ArniCart.priceForCategory === "function") {
+      return window.ArniCart.priceForCategory(item.category, item.productType);
+    }
+    return 0;
+  }
 
   function setStatus(message, kind) {
     if (!statusEl) return;
@@ -417,6 +444,18 @@
       img.alt = item.title || "Catalog item";
       img.loading = "lazy";
 
+      media.appendChild(img);
+
+      var meta = document.createElement("div");
+      meta.className = "catalog-card-meta";
+
+      var topRow = document.createElement("div");
+      topRow.className = "catalog-card-top";
+
+      var badge = document.createElement("span");
+      badge.className = "catalog-card-badge";
+      badge.textContent = badgeLabelForItem(item);
+
       var addBtn = document.createElement("button");
       addBtn.type = "button";
       addBtn.className = "catalog-cart-btn";
@@ -424,24 +463,15 @@
         "aria-label",
         "Add " + (item.title || "item") + " to cart"
       );
-      addBtn.innerHTML = '<span aria-hidden="true">🛒</span> Add';
-      addBtn.addEventListener("click", function (e) {
-        e.preventDefault();
-        e.stopPropagation();
+      addBtn.textContent = "+ Add";
+      addBtn.addEventListener("click", function () {
         if (window.ArniCart && typeof window.ArniCart.addItem === "function") {
           window.ArniCart.addItem(item);
         }
       });
 
-      media.appendChild(img);
-      media.appendChild(addBtn);
-
-      var meta = document.createElement("div");
-      meta.className = "catalog-card-meta";
-
-      var badge = document.createElement("span");
-      badge.className = "catalog-card-badge";
-      badge.textContent = categoryLabels[item.category] || item.category;
+      topRow.appendChild(badge);
+      topRow.appendChild(addBtn);
 
       var title = document.createElement("h3");
       title.className = "catalog-card-title";
@@ -449,13 +479,10 @@
 
       var price = document.createElement("p");
       price.className = "catalog-card-price";
-      var unit =
-        window.ArniCart && window.ArniCart.priceForCategory
-          ? window.ArniCart.priceForCategory(item.category)
-          : 0;
+      var unit = priceForItem(item);
       price.textContent = unit ? "$" + unit.toFixed(2) : "";
 
-      meta.appendChild(badge);
+      meta.appendChild(topRow);
       meta.appendChild(title);
       if (unit) meta.appendChild(price);
 
@@ -538,7 +565,7 @@
     return titleFromFile(file);
   }
 
-  async function uploadOneFile(file, category, index, total) {
+  async function uploadOneFile(file, category, productType, index, total) {
     var compressed = await compressImage(file);
     var stem = safeFileStem(file.name);
     var filename = stem + "-" + Date.now() + compressed.ext;
@@ -566,6 +593,7 @@
       category: category,
       src: imagePath
     };
+    if (productType) entry.productType = productType;
     items.push(entry);
 
     await putGithubFile(
@@ -587,6 +615,17 @@
     if (UPLOAD_CATEGORIES.indexOf(category) === -1) {
       setStatus("Pick a valid category first.", "error");
       return;
+    }
+
+    var productType = "";
+    if (isThemeCategory(category)) {
+      productType = typeSelect ? typeSelect.value : "";
+      if (productType !== "pin" && productType !== "magnet") {
+        setStatus("Choose Pin or Magnet for this category.", "error");
+        if (typeSelect) typeSelect.focus();
+        if (fileInput) fileInput.value = "";
+        return;
+      }
     }
 
     var customName = nameInput ? nameInput.value.trim() : "";
@@ -617,9 +656,10 @@
 
     try {
       for (var i = 0; i < files.length; i++) {
-        await uploadOneFile(files[i], category, i, files.length);
+        await uploadOneFile(files[i], category, productType, i, files.length);
       }
       if (nameInput) nameInput.value = "";
+      if (typeSelect) typeSelect.value = "";
       activeFilter = "all";
       renderFilters();
       renderGrid();
@@ -704,6 +744,11 @@
     fileInput.addEventListener("change", function (e) {
       handleFiles(e.target.files);
     });
+  }
+
+  if (categorySelect) {
+    categorySelect.addEventListener("change", syncTypeSelect);
+    syncTypeSelect();
   }
 
   if (dropzone) {
