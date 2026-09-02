@@ -1097,6 +1097,9 @@
     font-weight: 800;
     font-size: 0.85rem;
   }
+  .review-card-actions {
+    margin-top: 0.85rem;
+  }
   .review-card img {
     width: 100%;
     aspect-ratio: 4 / 3;
@@ -1449,7 +1452,7 @@
 
     <div class="review-form-card">
       <h3>Write a review</h3>
-      <p>Tell us what you loved — and attach a photo of our handmade piece. Photo is required.</p>
+      <p>Tell us what you loved — and attach a photo of our handmade piece.</p>
       <form id="reviewForm">
         <div class="review-form-grid">
           <label class="catalog-admin-field">
@@ -1500,12 +1503,12 @@
           <h3>Approve reviews</h3>
           <button type="button" class="catalog-admin-logout" id="reviewsAdminLogout">Log out</button>
         </div>
-        <p>Pending reviews submitted on this device appear below. You can also publish a review from email using the form.</p>
-        <p class="reviews-empty" id="reviewsPendingEmpty" hidden>No pending reviews on this device.</p>
+        <p>Pending reviews appear here after someone submits. You can also publish manually below.</p>
+        <p class="reviews-empty" id="reviewsPendingEmpty" hidden></p>
         <div id="reviewsPendingList" class="reviews-pending-list"></div>
 
         <form id="reviewsManualPublish" class="review-manual-publish">
-          <h4>Publish from email</h4>
+          <h4>Publish manually</h4>
           <label class="catalog-admin-field">
             <span>Reviewer name *</span>
             <input id="manualReviewName" type="text" required maxlength="60">
@@ -1515,8 +1518,12 @@
             <textarea id="manualReviewText" required maxlength="500"></textarea>
           </label>
           <label class="catalog-admin-field">
-            <span>Photo *</span>
-            <input id="manualReviewImage" type="file" accept="image/*" required>
+            <span>Photo file</span>
+            <input id="manualReviewImage" type="file" accept="image/*">
+          </label>
+          <label class="catalog-admin-field">
+            <span>Or photo URL (from email / ImgBB)</span>
+            <input id="manualReviewImageUrl" type="url" placeholder="https://i.ibb.co/...">
           </label>
           <button type="submit" class="btn-primary">Publish review</button>
         </form>
@@ -1819,6 +1826,7 @@
 <script src="assets/js/cart.js"></script>
 <script src="assets/js/catalog.js"></script>
 <script src="assets/js/reviews-data.js"></script>
+<script src="assets/js/reviews-imgbb-config.js"></script>
 <script src="assets/js/reviews.js"></script>
 </body>
 </html>

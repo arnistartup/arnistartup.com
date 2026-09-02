@@ -1,8 +1,9 @@
 (function () {
-  var PENDING_KEY = "arniPendingReviews";
-  var ADMIN_SESSION_KEY = "arniCatalogAdmin";
-  var ADMIN_TOKEN_KEY = "arniCatalogGithubToken";
+  var ADMIN_SESSION_KEY = "arniReviewsAdmin";
+  var ADMIN_TOKEN_KEY = "arniReviewsGithubToken";
   var ADMIN_PASSWORD = "arniadmin";
+  var IDB_NAME = "arniReviews";
+  var IDB_STORE = "pending";
 
   var GITHUB = {
     owner: "arnistartup",
@@ -14,7 +15,7 @@
   var published = Array.isArray(window.ARNI_REVIEWS_SEED)
     ? window.ARNI_REVIEWS_SEED.slice()
     : [];
-  var pending = loadPending();
+  var pending = [];
   var isAdmin = false;
   var githubToken = "";
   var busy = false;
@@ -45,24 +46,6 @@
 
   if (!grid || !form) return;
 
-  function loadPending() {
-    try {
-      var raw = localStorage.getItem(PENDING_KEY);
-      var parsed = raw ? JSON.parse(raw) : [];
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (err) {
-      return [];
-    }
-  }
-
-  function savePending() {
-    try {
-      localStorage.setItem(PENDING_KEY, JSON.stringify(pending));
-    } catch (err) {
-      // Image data can fill storage; keep what we can.
-    }
-  }
-
   function setStatus(el, message, kind) {
     if (!el) return;
     if (!message) {
@@ -74,6 +57,197 @@
     el.hidden = false;
     el.textContent = message;
     el.className = "reviews-status" + (kind ? " is-" + kind : "");
+  }
+
+  function slugify(value, maxLen) {
+    return String(value || "customer")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, maxLen || 24);
+  }
+
+  function isRemotePhotoUrl(src) {
+    return /^https?:\/\//i.test(String(src || ""));
+  }
+
+  function configImgbbKey() {
+    return typeof window.ARNI_IMGBB_API_KEY === "string"
+      ? window.ARNI_IMGBB_API_KEY.trim()
+      : "";
+  }
+
+  function normalizePending(item) {
+    if (!item || !item.id) return null;
+    return {
+      id: item.id,
+      name: item.name,
+      email: item.email || "",
+      text: item.text,
+      src: item.src || "",
+      previewUrl: item.previewUrl || item.src || "",
+      base64: item.base64 || "",
+      ext: item.ext || ".jpg",
+      createdAt: item.createdAt || "",
+      file: item.file
+    };
+  }
+
+  function mergePending(lists) {
+    var byId = {};
+    lists.forEach(function (list) {
+      (list || []).forEach(function (raw) {
+        var item = normalizePending(raw);
+        if (!item) return;
+        var prev = byId[item.id];
+        if (!prev) {
+          byId[item.id] = item;
+          return;
+        }
+        byId[item.id] = {
+          id: item.id,
+          name: item.name || prev.name,
+          email: item.email || prev.email,
+          text: item.text || prev.text,
+          src: item.src || prev.src,
+          previewUrl: item.previewUrl || prev.previewUrl || item.src || prev.src,
+          base64: item.base64 || prev.base64,
+          ext: item.ext || prev.ext,
+          createdAt: item.createdAt || prev.createdAt,
+          file: item.file || prev.file
+        };
+      });
+    });
+    return Object.keys(byId)
+      .map(function (id) {
+        return byId[id];
+      })
+      .sort(function (a, b) {
+        return String(a.createdAt).localeCompare(String(b.createdAt));
+      });
+  }
+
+  function openIdb() {
+    return new Promise(function (resolve, reject) {
+      if (!window.indexedDB) {
+        reject(new Error("IndexedDB unavailable"));
+        return;
+      }
+      var req = indexedDB.open(IDB_NAME, 1);
+      req.onupgradeneeded = function () {
+        var db = req.result;
+        if (!db.objectStoreNames.contains(IDB_STORE)) {
+          db.createObjectStore(IDB_STORE, { keyPath: "id" });
+        }
+      };
+      req.onsuccess = function () {
+        resolve(req.result);
+      };
+      req.onerror = function () {
+        reject(req.error || new Error("IndexedDB open failed"));
+      };
+    });
+  }
+
+  async function idbGetAll() {
+    try {
+      var db = await openIdb();
+      return await new Promise(function (resolve, reject) {
+        var req = db.transaction(IDB_STORE, "readonly").objectStore(IDB_STORE).getAll();
+        req.onsuccess = function () {
+          resolve(Array.isArray(req.result) ? req.result : []);
+        };
+        req.onerror = function () {
+          reject(req.error);
+        };
+      });
+    } catch (err) {
+      return [];
+    }
+  }
+
+  async function idbPut(item) {
+    try {
+      var db = await openIdb();
+      await new Promise(function (resolve, reject) {
+        var tx = db.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).put(item);
+        tx.oncomplete = function () {
+          resolve();
+        };
+        tx.onerror = function () {
+          reject(tx.error);
+        };
+      });
+    } catch (err) {}
+  }
+
+  async function idbDelete(id) {
+    try {
+      var db = await openIdb();
+      await new Promise(function (resolve, reject) {
+        var tx = db.transaction(IDB_STORE, "readwrite");
+        tx.objectStore(IDB_STORE).delete(id);
+        tx.oncomplete = function () {
+          resolve();
+        };
+        tx.onerror = function () {
+          reject(tx.error);
+        };
+      });
+    } catch (err) {}
+  }
+
+  async function reloadPending() {
+    pending = mergePending([await idbGetAll()]);
+    renderPending();
+    return pending;
+  }
+
+  async function dropPendingLocal(item) {
+    pending = pending.filter(function (p) {
+      return p.id !== item.id;
+    });
+    await idbDelete(item.id);
+    renderPending();
+  }
+
+  async function uploadToImgbb(base64, name) {
+    var key = configImgbbKey();
+    if (!key) throw new Error("IMGBB_NOT_CONFIGURED");
+    var body = new FormData();
+    body.append("image", base64);
+    if (name) body.append("name", slugify(name, 40));
+    var res = await fetch(
+      "https://api.imgbb.com/1/upload?key=" + encodeURIComponent(key),
+      { method: "POST", body: body }
+    );
+    var data = null;
+    try {
+      data = await res.json();
+    } catch (err) {}
+    if (!res.ok || !data || !data.success || !data.data) {
+      throw new Error(
+        (data && data.error && data.error.message) ||
+          "Could not upload photo to ImgBB."
+      );
+    }
+    return {
+      url: data.data.display_url || data.data.url
+    };
+  }
+
+  async function fetchRemoteImageAsBase64(url) {
+    var res = await fetch(url);
+    if (!res.ok) throw new Error("Could not download review photo.");
+    var blob = await res.blob();
+    var dataUrl = await readFileAsDataURL(blob);
+    var match = String(dataUrl).match(/^data:image\/(\w+);base64,(.+)$/);
+    if (!match) throw new Error("Could not read review photo.");
+    return {
+      base64: match[2],
+      ext: match[1].toLowerCase() === "png" ? ".png" : ".jpg"
+    };
   }
 
   function readFileAsDataURL(file) {
@@ -125,41 +299,30 @@
   }
 
   function parseReviewsData(text) {
-    var match = String(text).match(
-      /ARNI_REVIEWS_SEED\s*=\s*(\[[\s\S]*\])\s*;?\s*$/
-    );
+    var match = String(text).match(/ARNI_REVIEWS_SEED\s*=\s*(\[[\s\S]*\])\s*;?\s*$/);
     if (!match) throw new Error("Could not find reviews list");
-    var literal = match[1];
     try {
-      return JSON.parse(literal);
+      return JSON.parse(match[1]);
     } catch (err) {
-      return new Function("return (" + literal + ");")();
+      return new Function("return (" + match[1] + ");")();
     }
   }
 
   function serializeReviewsData(items) {
-    return (
-      "window.ARNI_REVIEWS_SEED = " +
-      JSON.stringify(items, null, 2) +
-      ";\n"
-    );
+    return "window.ARNI_REVIEWS_SEED = " + JSON.stringify(items, null, 2) + ";\n";
   }
 
   function friendlyGithubError(message, status) {
     var msg = String(message || "");
-    if (
-      msg.toLowerCase().indexOf("resource not accessible") !== -1 ||
-      status === 403
-    ) {
-      return (
-        "GitHub token cannot write to this repo. Use a classic token with public_repo."
-      );
+    if (msg.toLowerCase().indexOf("resource not accessible") !== -1 || status === 403) {
+      return "GitHub token cannot write to this repo. Use a classic token with public_repo.";
     }
     return msg || "GitHub request failed (" + status + ")";
   }
 
   async function githubApi(path, options) {
     options = options || {};
+    if (!githubToken) throw new Error("GitHub token is missing.");
     var res = await fetch(
       "https://api.github.com/repos/" +
         GITHUB.owner +
@@ -183,9 +346,7 @@
       data = await res.json();
     } catch (err) {}
     if (!res.ok) {
-      var error = new Error(
-        friendlyGithubError(data && data.message, res.status)
-      );
+      var error = new Error(friendlyGithubError(data && data.message, res.status));
       error.status = res.status;
       throw error;
     }
@@ -195,15 +356,12 @@
   async function getOrCreateReviewsData() {
     try {
       var dataFile = await githubApi(GITHUB.dataPath);
-      var text = base64ToUtf8(dataFile.content.replace(/\n/g, ""));
       return {
-        items: parseReviewsData(text),
+        items: parseReviewsData(base64ToUtf8(dataFile.content.replace(/\n/g, ""))),
         sha: dataFile.sha
       };
     } catch (err) {
-      if (err && err.status === 404) {
-        return { items: [], sha: null };
-      }
+      if (err && err.status === 404) return { items: [], sha: null };
       throw err;
     }
   }
@@ -216,6 +374,22 @@
     };
     if (sha) body.sha = sha;
     return githubApi(path, { method: "PUT", body: body });
+  }
+
+  async function deleteGithubFile(path, message) {
+    try {
+      var existing = await githubApi(path);
+      await githubApi(path, {
+        method: "DELETE",
+        body: {
+          message: message,
+          sha: existing.sha,
+          branch: GITHUB.branch
+        }
+      });
+    } catch (err) {
+      if (!err || err.status !== 404) throw err;
+    }
   }
 
   async function verifyGithubToken(token) {
@@ -271,16 +445,28 @@
         quote.className = "review-card-text";
         quote.textContent = "“" + (review.text || "") + "”";
 
+        body.appendChild(who);
+        body.appendChild(quote);
+
         if (review.date) {
           var date = document.createElement("p");
           date.className = "review-card-date";
           date.textContent = review.date;
-          body.appendChild(who);
-          body.appendChild(quote);
           body.appendChild(date);
-        } else {
-          body.appendChild(who);
-          body.appendChild(quote);
+        }
+
+        if (isAdmin) {
+          var actions = document.createElement("div");
+          actions.className = "review-card-actions";
+          var del = document.createElement("button");
+          del.type = "button";
+          del.className = "review-reject-btn";
+          del.textContent = "Delete";
+          del.addEventListener("click", function () {
+            deletePublishedReview(review);
+          });
+          actions.appendChild(del);
+          body.appendChild(actions);
         }
 
         var img = document.createElement("img");
@@ -297,11 +483,11 @@
   function renderPending() {
     if (!pendingList || !pendingEmpty) return;
     pendingList.innerHTML = "";
-
     if (!isAdmin) return;
 
     if (!pending.length) {
       pendingEmpty.hidden = false;
+      pendingEmpty.textContent = "No pending reviews.";
       return;
     }
     pendingEmpty.hidden = true;
@@ -311,7 +497,7 @@
       row.className = "review-pending-card";
 
       var img = document.createElement("img");
-      img.src = item.previewUrl || item.src;
+      img.src = item.previewUrl || item.src || "";
       img.alt = "Pending review photo";
 
       var info = document.createElement("div");
@@ -339,12 +525,7 @@
       reject.className = "review-reject-btn";
       reject.textContent = "Reject";
       reject.addEventListener("click", function () {
-        pending = pending.filter(function (p) {
-          return p.id !== item.id;
-        });
-        savePending();
-        renderPending();
-        setStatus(publishStatus, "Review rejected and removed from pending.", "ok");
+        rejectReview(item);
       });
 
       actions.appendChild(approve);
@@ -368,10 +549,11 @@
     }
     if (adminPassword) adminPassword.value = "";
     if (adminToken) adminToken.value = "";
+    renderPublished();
     renderPending();
   }
 
-  function loginAdmin(token) {
+  async function loginAdmin(token) {
     isAdmin = true;
     githubToken = token;
     try {
@@ -379,6 +561,19 @@
       sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
     } catch (err) {}
     setAdminUI();
+    setStatus(publishStatus, "Loading pending reviews…", "busy");
+    try {
+      await reloadPending();
+      setStatus(
+        publishStatus,
+        pending.length
+          ? "Loaded " + pending.length + " pending review(s)."
+          : "No pending reviews right now. Use Publish manually with the email photo URL if needed.",
+        "ok"
+      );
+    } catch (err) {
+      setStatus(publishStatus, err.message || "Could not load pending reviews.", "error");
+    }
   }
 
   function logoutAdmin() {
@@ -391,6 +586,100 @@
     setAdminUI();
   }
 
+  async function ensureReviewBase64(item) {
+    if (item.base64) return { base64: item.base64, ext: item.ext || ".jpg" };
+    if (item.file) {
+      var compressed = await compressImage(item.file, 1000, 0.85);
+      return { base64: compressed.base64, ext: compressed.ext };
+    }
+    if (item.src && isRemotePhotoUrl(item.src)) {
+      return fetchRemoteImageAsBase64(item.src);
+    }
+    if (item.src) {
+      var file = await githubApi(item.src);
+      return {
+        base64: file.content.replace(/\n/g, ""),
+        ext: item.ext || ".jpg"
+      };
+    }
+    throw new Error("Review photo is missing.");
+  }
+
+  async function rejectReview(item) {
+    if (!isAdmin || busy) return;
+    busy = true;
+    setStatus(publishStatus, "Removing pending review…", "busy");
+    try {
+      await dropPendingLocal(item);
+      setStatus(publishStatus, "Review rejected and removed from pending.", "ok");
+    } catch (err) {
+      console.error(err);
+      setStatus(publishStatus, err.message || "Could not reject review.", "error");
+    } finally {
+      busy = false;
+    }
+  }
+
+  async function deletePublishedReview(review) {
+    if (!isAdmin || busy) return;
+    if (!githubToken) {
+      setStatus(publishStatus, "Please log in again with your GitHub token.", "error");
+      return;
+    }
+    var label = (review && review.name) || "this review";
+    if (
+      !window.confirm(
+        "Delete the published review from " +
+          label +
+          "? This removes it from the site and GitHub."
+      )
+    ) {
+      return;
+    }
+
+    busy = true;
+    setStatus(publishStatus, "Deleting published review…", "busy");
+    try {
+      var existing = await getOrCreateReviewsData();
+      var items = existing.items.filter(function (item) {
+        if (review.id && item.id) return item.id !== review.id;
+        return !(item.src === review.src && item.name === review.name);
+      });
+
+      await putGithubFile(
+        GITHUB.dataPath,
+        utf8ToBase64(serializeReviewsData(items)),
+        "Delete review from " + label,
+        existing.sha || undefined
+      );
+
+      if (review.src && review.src.indexOf("assets/reviews/") === 0) {
+        try {
+          await deleteGithubFile(
+            review.src,
+            "Delete review photo: " + review.src.split("/").pop()
+          );
+        } catch (err) {
+          console.warn("Removed from list, but photo delete failed", err);
+        }
+      }
+
+      published = items;
+      window.ARNI_REVIEWS_SEED = items.slice();
+      renderPublished();
+      setStatus(
+        publishStatus,
+        "Review deleted. It will disappear for everyone after GitHub Pages refreshes.",
+        "ok"
+      );
+    } catch (err) {
+      console.error(err);
+      setStatus(publishStatus, err.message || "Could not delete review.", "error");
+    } finally {
+      busy = false;
+    }
+  }
+
   async function publishReview(item, fromPending) {
     if (!isAdmin || busy) return;
     if (!githubToken) {
@@ -400,45 +689,35 @@
 
     busy = true;
     setStatus(publishStatus, "Publishing approved review to the site…", "busy");
-
     try {
-      var base64 = item.base64;
-      var ext = item.ext || ".jpg";
-      if (!base64 && item.file) {
-        var compressed = await compressImage(item.file, 1000, 0.85);
-        base64 = compressed.base64;
-        ext = compressed.ext;
+      var imagePath = "";
+      var photo = null;
+      try {
+        photo = await ensureReviewBase64(item);
+      } catch (err) {
+        if (item.src && isRemotePhotoUrl(item.src)) {
+          imagePath = item.src;
+        } else {
+          throw err;
+        }
       }
-      if (!base64) throw new Error("Review photo is missing.");
 
-      var filename =
-        "review-" +
-        Date.now() +
-        "-" +
-        String(item.name || "customer")
-          .toLowerCase()
-          .replace(/[^a-z0-9]+/g, "-")
-          .replace(/^-+|-+$/g, "")
-          .slice(0, 24) +
-        ext;
-      var imagePath = "assets/reviews/" + filename;
-
-      await putGithubFile(
-        imagePath,
-        base64,
-        "Publish review photo: " + filename
-      );
+      if (photo) {
+        var filename =
+          "review-" + Date.now() + "-" + slugify(item.name) + (photo.ext || ".jpg");
+        imagePath = "assets/reviews/" + filename;
+        await putGithubFile(imagePath, photo.base64, "Publish review photo: " + filename);
+      }
 
       var existing = await getOrCreateReviewsData();
       var items = existing.items;
-      var entry = {
+      items.push({
         id: item.id || "review-" + Date.now(),
         name: item.name,
         text: item.text,
         src: imagePath,
         date: new Date().toISOString().slice(0, 10)
-      };
-      items.push(entry);
+      });
 
       await putGithubFile(
         GITHUB.dataPath,
@@ -451,13 +730,7 @@
       window.ARNI_REVIEWS_SEED = items.slice();
       renderPublished();
 
-      if (fromPending) {
-        pending = pending.filter(function (p) {
-          return p.id !== item.id;
-        });
-        savePending();
-        renderPending();
-      }
+      if (fromPending) await dropPendingLocal(item);
 
       setStatus(
         publishStatus,
@@ -516,7 +789,6 @@
     var file = fileInput && fileInput.files && fileInput.files[0];
 
     if (honeypot && honeypot.value !== "") return;
-
     if (!name || !email || !text) {
       setStatus(statusEl, "Please fill in your name, email, and review.", "error");
       return;
@@ -525,12 +797,16 @@
       setStatus(statusEl, "Please enter a valid email address.", "error");
       return;
     }
-    if (!file) {
-      setStatus(statusEl, "A photo is required with your review.", "error");
+    if (!file || !file.type || file.type.indexOf("image/") !== 0) {
+      setStatus(statusEl, "Please attach an image file (JPG, PNG, or WEBP).", "error");
       return;
     }
-    if (!file.type || file.type.indexOf("image/") !== 0) {
-      setStatus(statusEl, "Please attach an image file (JPG, PNG, or WEBP).", "error");
+    if (!configImgbbKey()) {
+      setStatus(
+        statusEl,
+        "Photo upload is not set up yet. Please email arni.startup@gmail.com.",
+        "error"
+      );
       return;
     }
 
@@ -542,32 +818,39 @@
     setStatus(statusEl, "Submitting your review for approval…", "busy");
 
     try {
-      var compressed = await compressImage(file, 900, 0.7);
+      var mobile = window.innerWidth < 700;
+      var compressed = await compressImage(
+        file,
+        mobile ? 800 : 900,
+        mobile ? 0.62 : 0.7
+      );
+
+      setStatus(statusEl, "Uploading review photo…", "busy");
+      var uploaded = await uploadToImgbb(compressed.base64, name);
       var item = {
         id: "pending-" + Date.now(),
         name: name,
         email: email,
         text: text,
-        previewUrl: compressed.dataUrl,
+        src: uploaded.url,
+        previewUrl: uploaded.url,
         base64: compressed.base64,
         ext: compressed.ext,
         createdAt: new Date().toISOString()
       };
 
-      pending.push(item);
-      try {
-        savePending();
-      } catch (err) {
-        // still continue to email
-      }
+      await idbPut(item);
+      pending = mergePending([pending, [item]]);
+      renderPending();
 
       if (typeof emailjs !== "undefined" && emailjs.send) {
+        setStatus(statusEl, "Sending email notification…", "busy");
         await emailjs.send("service_cuki6nm", "template_5pzor48", {
           subject: "Review received from " + name,
           name: name,
           email: email,
           product: "Website Review (pending approval)",
-          quantity: "1 photo attached",
+          quantity: "1 photo",
           unit_price: "N/A",
           shipping_cost: "N/A",
           estimated_total: "N/A",
@@ -576,14 +859,16 @@
             name +
             "\n\n" +
             text +
-            "\n\nOpen the website → Reviews → Admin login to approve and publish.",
+            "\n\nPhoto:\n" +
+            uploaded.url +
+            "\n\nOpen Reviews → Admin login → Approve & publish.\n" +
+            "Or Publish manually and paste the photo URL above.",
           to_email: "arni.startup@gmail.com"
         });
       }
 
       form.reset();
       clearPreview();
-      renderPending();
       setStatus(
         statusEl,
         "Thank you! Your review was submitted and will appear on the site after we approve it.",
@@ -645,7 +930,7 @@
       }
       try {
         await verifyGithubToken(token);
-        loginAdmin(token);
+        await loginAdmin(token);
       } catch (err) {
         if (adminError) {
           adminError.hidden = false;
@@ -665,23 +950,31 @@
       var name = document.getElementById("manualReviewName");
       var text = document.getElementById("manualReviewText");
       var fileEl = document.getElementById("manualReviewImage");
+      var urlEl = document.getElementById("manualReviewImageUrl");
       var file = fileEl && fileEl.files && fileEl.files[0];
-      if (!name || !text || !name.value.trim() || !text.value.trim() || !file) {
-        setStatus(publishStatus, "Name, review text, and photo are required.", "error");
+      var imageUrl = urlEl ? urlEl.value.trim() : "";
+      if (!name || !text || !name.value.trim() || !text.value.trim()) {
+        setStatus(publishStatus, "Name and review text are required.", "error");
+        return;
+      }
+      if (!file && !imageUrl) {
+        setStatus(publishStatus, "Add a photo file or a photo URL.", "error");
         return;
       }
       try {
-        var compressed = await compressImage(file, 1000, 0.85);
-        await publishReview(
-          {
-            id: "manual-" + Date.now(),
-            name: name.value.trim(),
-            text: text.value.trim(),
-            base64: compressed.base64,
-            ext: compressed.ext
-          },
-          false
-        );
+        var payload = {
+          id: "manual-" + Date.now(),
+          name: name.value.trim(),
+          text: text.value.trim()
+        };
+        if (file) {
+          var compressed = await compressImage(file, 1000, 0.85);
+          payload.base64 = compressed.base64;
+          payload.ext = compressed.ext;
+        } else {
+          payload.src = imageUrl;
+        }
+        await publishReview(payload, false);
         manualForm.reset();
       } catch (err) {
         setStatus(publishStatus, err.message || "Could not publish.", "error");
@@ -698,4 +991,5 @@
 
   renderPublished();
   setAdminUI();
+  reloadPending().catch(function () {});
 })();

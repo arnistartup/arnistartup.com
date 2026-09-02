@@ -469,7 +469,7 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "hindu-god-img-1379-1788268481617-0",
-    "title": "Baby krishna",
+    "title": "Baby Krishna",
     "category": "hindu-god",
     "src": "assets/catalog/hindu-god/img-1379-1788268481617.jpg",
     "productType": "magnet"
@@ -497,7 +497,7 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "hindu-god-img-1376-1788268979495-0",
-    "title": "Ramakrishna",
+    "title": "Radha Krishna",
     "category": "hindu-god",
     "src": "assets/catalog/hindu-god/img-1376-1788268979495.jpg",
     "productType": "magnet"
