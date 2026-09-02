@@ -612,7 +612,7 @@
       }
       try {
         var payload = {
-          id: "manual-" + Date.now(),
+          id: "review-" + Date.now(),
           name: name,
           text: text
         };
@@ -627,7 +627,9 @@
         form.reset();
         clearPreview();
         setAdminUI();
-      } catch (err) {}
+      } catch (err) {
+        /* Status already shown by publishReview */
+      }
       return;
     }
 

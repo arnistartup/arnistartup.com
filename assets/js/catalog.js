@@ -367,7 +367,7 @@
       : canvas.toDataURL(mime);
     var base64 = outDataUrl.split(",")[1];
     var ext = mime === "image/png" ? ".png" : ".jpg";
-    return { base64: base64, ext: ext, previewUrl: outDataUrl };
+    return { base64: base64, ext: ext };
   }
 
   async function getCatalogFile() {

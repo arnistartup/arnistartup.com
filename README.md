@@ -4,7 +4,13 @@ Website for [arnistartup.com](https://arnistartup.com).
 
 ## Admin GitHub token
 
-Create a token in GitHub → **Settings** → **Developer settings** → **Personal access tokens** (classic `public_repo`, or fine-grained Contents write on this repo). Paste it only in **Admin login** on the site. Never commit the token.
+Create a token in GitHub → **Settings** → **Developer settings** → **Personal access tokens** (classic `public_repo`, or fine-grained Contents write on this repo).
+
+Paste it only when you sign in on the site:
+- Catalog → **Admin login**
+- Reviews → **Approve review**
+
+Never commit the token.
 
 ## Reviews
 
