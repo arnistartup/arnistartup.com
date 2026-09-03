@@ -1,34 +1,25 @@
 (function () {
-  var ADMIN_SESSION_KEY = "arniCatalogAdmin";
-  var ADMIN_TOKEN_KEY = "arniCatalogGithubToken";
-  // Change this password anytime — only people who know it can open upload.
-  var ADMIN_PASSWORD = "arniadmin";
-
-  var GITHUB = {
-    owner: "arnistartup",
-    repo: "arnistartup.com",
-    branch: "main",
-    dataPath: "assets/js/catalog-data.js"
-  };
-
-  var CATEGORIES = [
-    { id: "all", label: "All" },
-    { id: "badge-pins", label: "Badge pins" },
-    { id: "magnets", label: "Magnets" },
-    { id: "keychains", label: "Keychains" },
-    { id: "bracelets", label: "Bracelets" },
-    { id: "earrings", label: "Earrings" },
-    { id: "hindu-god", label: "Hindu God" },
-    { id: "happy-birthday", label: "Happy Birthday" }
-  ];
-
-  var UPLOAD_CATEGORIES = CATEGORIES.filter(function (cat) {
-    return cat.id !== "all";
-  }).map(function (cat) {
+  var Admin = window.ArniAdminGate;
+  var Gh = window.ArniGithub;
+  var Img = window.ArniImages;
+  var Site = window.ArniSite;
+  var DATA_PATH = "assets/js/catalog-data.js";
+  var CATEGORIES = Site ? Site.filterCategories() : [];
+  var UPLOAD_CATEGORIES = Site ? Site.uploadCategories() : [];
+  var UPLOAD_IDS = UPLOAD_CATEGORIES.map(function (cat) {
     return cat.id;
   });
 
+  var MIN_ZOOM = 1;
+  var MAX_ZOOM = 4;
+  var TAP_ZOOM = 2.5;
+  var TAP_SLOP = 8;
+
   var activeFilter = "all";
+  var zoomScale = MIN_ZOOM;
+  var zoomPanX = 0;
+  var zoomPanY = 0;
+  var skipBackdropClose = false;
   var seedItems = Array.isArray(window.ARNI_CATALOG_SEED)
     ? window.ARNI_CATALOG_SEED.slice()
     : [];
@@ -45,354 +36,285 @@
   var typeSelect = document.getElementById("catalogUploadType");
   var typeWrap = document.getElementById("catalogUploadTypeWrap");
   var nameInput = document.getElementById("catalogUploadName");
-  var adminOpen = document.getElementById("catalogAdminOpen");
-  var adminLogin = document.getElementById("catalogAdminLogin");
-  var adminPassword = document.getElementById("catalogAdminPassword");
-  var adminToken = document.getElementById("catalogAdminToken");
-  var adminError = document.getElementById("catalogAdminError");
-  var adminCancel = document.getElementById("catalogAdminCancel");
   var adminLogout = document.getElementById("catalogAdminLogout");
   var dropzone = document.getElementById("catalogDropzone");
   var statusEl = document.getElementById("catalogUploadStatus");
+  var lightbox = document.getElementById("catalogLightbox");
+  var lightboxStage = document.getElementById("catalogLightboxStage");
+  var lightboxImage = document.getElementById("catalogLightboxImage");
+  var lightboxCaption = document.getElementById("catalogLightboxCaption");
+  var lightboxClose = document.getElementById("catalogLightboxClose");
+  var zoomInBtn = document.getElementById("catalogLightboxZoomIn");
+  var zoomOutBtn = document.getElementById("catalogLightboxZoomOut");
+  var zoomLevelEl = document.getElementById("catalogLightboxZoomLevel");
 
   if (!grid || !filters) return;
 
-  function isThemeCategory(category) {
-    return !!(
-      window.ArniCart &&
-      typeof window.ArniCart.isThemeCategory === "function" &&
-      window.ArniCart.isThemeCategory(category)
-    );
-  }
-
   function syncTypeSelect() {
     var category = categorySelect ? categorySelect.value : "";
-    var needsType = isThemeCategory(category);
+    var needsType = !!(Site && Site.isThemeCategory(category));
     if (typeWrap) typeWrap.hidden = !needsType;
     if (typeSelect && !needsType) typeSelect.value = "";
   }
 
-  function badgeLabelForItem(item) {
-    if (window.ArniCart && typeof window.ArniCart.labelForItem === "function") {
-      return window.ArniCart.labelForItem(item);
-    }
-    return item.category || "";
-  }
-
-  function priceForItem(item) {
-    if (window.ArniCart && typeof window.ArniCart.priceForCategory === "function") {
-      return window.ArniCart.priceForCategory(item.category, item.productType);
-    }
-    return 0;
-  }
-
   function setStatus(message, kind) {
-    if (!statusEl) return;
-    if (!message) {
-      statusEl.hidden = true;
-      statusEl.textContent = "";
-      statusEl.className = "catalog-upload-status";
-      return;
+    if (Site) Site.setStatus(statusEl, "catalog-upload-status", message, kind);
+  }
+
+  function cssPx(name, fallback) {
+    if (!lightbox) return fallback;
+    var n = parseFloat(getComputedStyle(lightbox).getPropertyValue(name));
+    return n > 0 ? n : fallback;
+  }
+
+  function fitPhotoToViewport() {
+    if (!lightbox || lightbox.hidden || !lightboxImage) return;
+    var naturalW = lightboxImage.naturalWidth;
+    var naturalH = lightboxImage.naturalHeight;
+    if (!naturalW || !naturalH) return;
+
+    var availableW = Math.min(
+      cssPx("--lightbox-max-w", 1100),
+      window.innerWidth * 0.92
+    );
+    var availableH = Math.min(
+      cssPx("--lightbox-max-h", 900),
+      Math.max(200, window.innerHeight - cssPx("--lightbox-chrome", 150))
+    );
+    var scale = Math.min(availableW / naturalW, availableH / naturalH);
+
+    lightboxImage.style.width = Math.round(naturalW * scale) + "px";
+    lightboxImage.style.height = Math.round(naturalH * scale) + "px";
+    applyZoom();
+  }
+
+  function applyZoom() {
+    if (!lightboxImage || !lightboxStage) return;
+
+    var maxPanX = Math.max(
+      0,
+      (lightboxImage.offsetWidth * zoomScale - lightboxStage.clientWidth) / 2
+    );
+    var maxPanY = Math.max(
+      0,
+      (lightboxImage.offsetHeight * zoomScale - lightboxStage.clientHeight) / 2
+    );
+    zoomPanX = Math.min(maxPanX, Math.max(-maxPanX, zoomPanX));
+    zoomPanY = Math.min(maxPanY, Math.max(-maxPanY, zoomPanY));
+
+    lightboxImage.style.transform =
+      "translate(" + zoomPanX + "px, " + zoomPanY + "px) scale(" + zoomScale + ")";
+    lightboxStage.classList.toggle("is-zoomed", zoomScale > MIN_ZOOM);
+    if (zoomLevelEl) {
+      zoomLevelEl.textContent = Math.round(zoomScale * 100) + "%";
     }
-    statusEl.hidden = false;
-    statusEl.textContent = message;
-    statusEl.className =
-      "catalog-upload-status" + (kind ? " is-" + kind : "");
+    if (zoomInBtn) zoomInBtn.disabled = zoomScale >= MAX_ZOOM;
+    if (zoomOutBtn) zoomOutBtn.disabled = zoomScale <= MIN_ZOOM;
+  }
+
+  function setZoom(nextScale, clientX, clientY) {
+    if (!lightboxStage) return;
+    var target = Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, nextScale));
+    if (target === zoomScale) return;
+
+    if (target === MIN_ZOOM) {
+      zoomPanX = 0;
+      zoomPanY = 0;
+    } else if (typeof clientX === "number") {
+      var rect = lightboxStage.getBoundingClientRect();
+      var dx = clientX - (rect.left + rect.width / 2);
+      var dy = clientY - (rect.top + rect.height / 2);
+      var ratio = target / zoomScale;
+      zoomPanX = dx - (dx - zoomPanX) * ratio;
+      zoomPanY = dy - (dy - zoomPanY) * ratio;
+    }
+
+    zoomScale = target;
+    applyZoom();
+  }
+
+  function resetZoom() {
+    zoomScale = MIN_ZOOM;
+    zoomPanX = 0;
+    zoomPanY = 0;
+    applyZoom();
+  }
+
+  function openLightbox(item) {
+    if (!lightbox || !lightboxImage) return;
+    var title = item.title || "Catalog item";
+    lightboxImage.src = item.src;
+    lightboxImage.alt = title;
+    if (lightboxCaption) lightboxCaption.textContent = title;
+    lightbox.hidden = false;
+    document.body.classList.add("lightbox-open");
+    resetZoom();
+    if (lightboxImage.complete) fitPhotoToViewport();
+    if (lightboxClose) lightboxClose.focus();
+  }
+
+  function closeLightbox() {
+    if (!lightbox || lightbox.hidden) return;
+    lightbox.hidden = true;
+    document.body.classList.remove("lightbox-open");
+    resetZoom();
+    if (lightboxImage) {
+      lightboxImage.removeAttribute("src");
+      lightboxImage.alt = "";
+      lightboxImage.style.width = "";
+      lightboxImage.style.height = "";
+    }
+  }
+
+  function bindLightbox() {
+    if (lightboxClose) lightboxClose.addEventListener("click", closeLightbox);
+    if (zoomInBtn) {
+      zoomInBtn.addEventListener("click", function () {
+        setZoom(zoomScale + 0.5);
+      });
+    }
+    if (zoomOutBtn) {
+      zoomOutBtn.addEventListener("click", function () {
+        setZoom(zoomScale - 0.5);
+      });
+    }
+    if (lightboxImage) {
+      lightboxImage.addEventListener("load", fitPhotoToViewport);
+      window.addEventListener("resize", fitPhotoToViewport);
+    }
+    if (lightbox) {
+      lightbox.addEventListener("click", function (e) {
+        var wasDragging = skipBackdropClose;
+        skipBackdropClose = false;
+        if (e.target === lightbox && !wasDragging) closeLightbox();
+      });
+      document.addEventListener("keydown", function (e) {
+        if (e.key === "Escape") closeLightbox();
+      });
+    }
+    if (!lightboxStage) return;
+
+    var pointers = {};
+    var lastPointer = null;
+    var pinchStartDistance = 0;
+    var pinchStartScale = 1;
+    var dragDistance = 0;
+
+    function pointerCount() {
+      return Object.keys(pointers).length;
+    }
+
+    function pointerList() {
+      return Object.keys(pointers).map(function (id) {
+        return pointers[id];
+      });
+    }
+
+    lightboxStage.addEventListener("pointerdown", function (e) {
+      if (pointers[e.pointerId]) return;
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+      lastPointer = { x: e.clientX, y: e.clientY };
+      dragDistance = 0;
+      try {
+        lightboxStage.setPointerCapture(e.pointerId);
+      } catch (err) {}
+
+      if (pointerCount() === 2) {
+        var pair = pointerList();
+        pinchStartDistance = Math.hypot(
+          pair[0].x - pair[1].x,
+          pair[0].y - pair[1].y
+        );
+        pinchStartScale = zoomScale;
+      }
+    });
+
+    lightboxStage.addEventListener("pointermove", function (e) {
+      if (!pointers[e.pointerId]) return;
+      pointers[e.pointerId] = { x: e.clientX, y: e.clientY };
+
+      if (pointerCount() === 2 && pinchStartDistance > 0) {
+        var pair = pointerList();
+        var distance = Math.hypot(pair[0].x - pair[1].x, pair[0].y - pair[1].y);
+        setZoom(
+          pinchStartScale * (distance / pinchStartDistance),
+          (pair[0].x + pair[1].x) / 2,
+          (pair[0].y + pair[1].y) / 2
+        );
+        dragDistance = Infinity;
+        return;
+      }
+
+      if (pointerCount() !== 1 || !lastPointer) return;
+      var dx = e.clientX - lastPointer.x;
+      var dy = e.clientY - lastPointer.y;
+      lastPointer = { x: e.clientX, y: e.clientY };
+      dragDistance += Math.abs(dx) + Math.abs(dy);
+
+      if (zoomScale > MIN_ZOOM) {
+        zoomPanX += dx;
+        zoomPanY += dy;
+        lightboxStage.classList.add("is-panning");
+        applyZoom();
+      }
+    });
+
+    function endPointer(e) {
+      if (!pointers[e.pointerId]) return;
+      delete pointers[e.pointerId];
+      lightboxStage.classList.remove("is-panning");
+
+      if (pointerCount() === 0) {
+        if (e.type === "pointerup" && dragDistance < TAP_SLOP) {
+          setZoom(
+            zoomScale > MIN_ZOOM ? MIN_ZOOM : TAP_ZOOM,
+            e.clientX,
+            e.clientY
+          );
+        } else {
+          skipBackdropClose = true;
+        }
+        lastPointer = null;
+        pinchStartDistance = 0;
+      }
+    }
+
+    lightboxStage.addEventListener("pointerup", endPointer);
+    lightboxStage.addEventListener("pointercancel", endPointer);
+    lightboxStage.addEventListener(
+      "wheel",
+      function (e) {
+        e.preventDefault();
+        setZoom(zoomScale + (e.deltaY < 0 ? 0.3 : -0.3), e.clientX, e.clientY);
+      },
+      { passive: false }
+    );
   }
 
   function setAdminUI() {
-    if (adminOpen) adminOpen.hidden = isAdmin;
-    if (adminLogin) adminLogin.hidden = true;
+    if (Admin) Admin.showChrome("catalogAdmin", isAdmin);
     if (dropzone) dropzone.hidden = !isAdmin;
-    if (adminError) {
-      adminError.hidden = true;
-      adminError.textContent = "";
-    }
-    if (adminPassword) adminPassword.value = "";
-    if (adminToken) adminToken.value = "";
     if (!isAdmin) setStatus("");
     renderGrid();
   }
 
-  function loginAdmin(token) {
-    isAdmin = true;
-    githubToken = token;
-    try {
-      sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
-      sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
-    } catch (err) {}
+  function setAdmin(token) {
+    githubToken = token || "";
+    isAdmin = !!githubToken;
     setAdminUI();
-  }
-
-  function logoutAdmin() {
-    isAdmin = false;
-    githubToken = "";
-    try {
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-      sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-    } catch (err) {}
-    setAdminUI();
-  }
-
-  function showLoginError(message) {
-    if (!adminError) return;
-    adminError.hidden = false;
-    adminError.textContent = message;
-  }
-
-  function utf8ToBase64(text) {
-    return btoa(unescape(encodeURIComponent(text)));
-  }
-
-  function base64ToUtf8(b64) {
-    return decodeURIComponent(escape(atob(b64)));
-  }
-
-  function friendlyGithubError(message, status) {
-    var msg = String(message || "");
-    var lower = msg.toLowerCase();
-    if (
-      lower.indexOf("resource not accessible by personal access token") !==
-        -1 ||
-      status === 403
-    ) {
-      return (
-        "Your GitHub token cannot write to this repo. Create a classic token " +
-        "while logged in as arnistartup with the public_repo scope " +
-        "(GitHub → Settings → Developer settings → Personal access tokens → " +
-        "Tokens (classic)), then log in again."
-      );
-    }
-    return msg || "GitHub request failed (" + status + ")";
-  }
-
-  async function githubApi(path, options) {
-    options = options || {};
-    var res = await fetch(
-      "https://api.github.com/repos/" +
-        GITHUB.owner +
-        "/" +
-        GITHUB.repo +
-        "/contents/" +
-        path,
-      {
-        method: options.method || "GET",
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: "Bearer " + githubToken,
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json"
-        },
-        body: options.body ? JSON.stringify(options.body) : undefined
-      }
-    );
-
-    var data = null;
-    try {
-      data = await res.json();
-    } catch (err) {
-      data = null;
-    }
-
-    if (!res.ok) {
-      throw new Error(
-        friendlyGithubError(
-          data && (data.message || data.error),
-          res.status
-        )
-      );
-    }
-    return data;
-  }
-
-  async function verifyGithubToken(token) {
-    var headers = {
-      Accept: "application/vnd.github+json",
-      Authorization: "Bearer " + token,
-      "X-GitHub-Api-Version": "2022-11-28"
-    };
-
-    var repoRes = await fetch(
-      "https://api.github.com/repos/" + GITHUB.owner + "/" + GITHUB.repo,
-      { headers: headers }
-    );
-    if (!repoRes.ok) {
-      var repoData = null;
-      try {
-        repoData = await repoRes.json();
-      } catch (err) {}
-      throw new Error(
-        friendlyGithubError(
-          (repoData && repoData.message) ||
-            "GitHub token could not access this repo",
-          repoRes.status
-        )
-      );
-    }
-
-    var repoJson = await repoRes.json();
-    if (!repoJson.permissions || !repoJson.permissions.push) {
-      throw new Error(
-        "This token can view the repo but cannot push. Recreate it with " +
-          "write access (classic token: public_repo scope)."
-      );
-    }
-
-    // Confirm Contents API read works (needed before upload/write).
-    var contentsRes = await fetch(
-      "https://api.github.com/repos/" +
-        GITHUB.owner +
-        "/" +
-        GITHUB.repo +
-        "/contents/" +
-        GITHUB.dataPath,
-      { headers: headers }
-    );
-    if (!contentsRes.ok) {
-      var contentsData = null;
-      try {
-        contentsData = await contentsRes.json();
-      } catch (err) {}
-      throw new Error(
-        friendlyGithubError(
-          (contentsData && contentsData.message) ||
-            "Token cannot read catalog-data.js",
-          contentsRes.status
-        )
-      );
-    }
   }
 
   function parseCatalogData(text) {
-    var match = String(text).match(
-      /ARNI_CATALOG_SEED\s*=\s*(\[[\s\S]*\])\s*;?\s*$/
-    );
-    if (!match) {
-      throw new Error("Could not find the catalog list in catalog-data.js");
-    }
-
-    var literal = match[1];
-    var parsed;
-    try {
-      // Prefer strict JSON (keys in double quotes).
-      parsed = JSON.parse(literal);
-    } catch (err) {
-      // Fall back for hand-edited JS object literals like { id: "x" }.
-      try {
-        parsed = new Function("return (" + literal + ");")();
-      } catch (err2) {
-        throw new Error(
-          "catalog-data.js could not be parsed. " + (err.message || "")
-        );
-      }
-    }
-
-    if (!Array.isArray(parsed)) {
-      throw new Error("catalog-data.js did not contain a list");
-    }
-    return parsed;
+    return Gh.parseSeedArray(text, "ARNI_CATALOG_SEED", "catalog-data.js");
   }
 
   function serializeCatalogData(items) {
-    return (
-      "window.ARNI_CATALOG_SEED = " +
-      JSON.stringify(items, null, 2) +
-      ";\n"
-    );
+    return Gh.serializeSeedArray("ARNI_CATALOG_SEED", items);
   }
 
   function safeFileStem(name) {
-    var stem = String(name || "photo")
-      .replace(/\.[^.]+$/, "")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, 40);
-    return stem || "photo";
-  }
-
-  function titleFromFile(file) {
-    var name = file.name.replace(/\.[^.]+$/, "");
-    name = name.replace(/[_-]+/g, " ").replace(/\s+/g, " ").trim();
-    if (!name) return "Handmade piece";
-    return name.replace(/\b\w/g, function (ch) {
-      return ch.toUpperCase();
-    });
-  }
-
-  function readFileAsDataURL(file) {
-    return new Promise(function (resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function () {
-        resolve(reader.result);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function loadImage(dataUrl) {
-    return new Promise(function (resolve, reject) {
-      var img = new Image();
-      img.onload = function () {
-        resolve(img);
-      };
-      img.onerror = reject;
-      img.src = dataUrl;
-    });
-  }
-
-  async function compressImage(file) {
-    var dataUrl = await readFileAsDataURL(file);
-    var img = await loadImage(dataUrl);
-    var maxSide = 1200;
-    var scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-    var width = Math.max(1, Math.round(img.width * scale));
-    var height = Math.max(1, Math.round(img.height * scale));
-    var canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    var ctx = canvas.getContext("2d");
-    ctx.drawImage(img, 0, 0, width, height);
-
-    var mime = "image/jpeg";
-    var quality = 0.85;
-    if (file.type === "image/png") {
-      mime = "image/png";
-      quality = undefined;
-    }
-
-    var outDataUrl = quality
-      ? canvas.toDataURL(mime, quality)
-      : canvas.toDataURL(mime);
-    var base64 = outDataUrl.split(",")[1];
-    var ext = mime === "image/png" ? ".png" : ".jpg";
-    return { base64: base64, ext: ext };
-  }
-
-  async function getCatalogFile() {
-    return githubApi(GITHUB.dataPath);
-  }
-
-  async function putGithubFile(path, contentBase64, message, sha) {
-    var body = {
-      message: message,
-      content: contentBase64,
-      branch: GITHUB.branch
-    };
-    if (sha) body.sha = sha;
-    return githubApi(path, { method: "PUT", body: body });
-  }
-
-  async function deleteGithubFile(path, sha, message) {
-    return githubApi(path, {
-      method: "DELETE",
-      body: {
-        message: message,
-        sha: sha,
-        branch: GITHUB.branch
-      }
-    });
+    return (Site && Site.slugify(String(name || "photo").replace(/\.[^.]+$/, ""), 40)) ||
+      "photo";
   }
 
   function renderFilters() {
@@ -402,7 +324,6 @@
       btn.type = "button";
       btn.className =
         "catalog-filter" + (activeFilter === cat.id ? " is-active" : "");
-      btn.setAttribute("data-filter", cat.id);
       btn.textContent = cat.label;
       btn.addEventListener("click", function () {
         activeFilter = cat.id;
@@ -436,8 +357,16 @@
       card.className = "catalog-card";
       card.setAttribute("data-category", item.category);
 
-      var media = document.createElement("div");
+      var media = document.createElement("button");
+      media.type = "button";
       media.className = "catalog-card-media";
+      media.setAttribute(
+        "aria-label",
+        "View larger photo of " + (item.title || "item")
+      );
+      media.addEventListener("click", function () {
+        openLightbox(item);
+      });
 
       var img = document.createElement("img");
       img.src = item.src;
@@ -454,7 +383,7 @@
 
       var badge = document.createElement("span");
       badge.className = "catalog-card-badge";
-      badge.textContent = badgeLabelForItem(item);
+      badge.textContent = Site ? Site.labelForItem(item) : item.category || "";
 
       var addBtn = document.createElement("button");
       addBtn.type = "button";
@@ -479,7 +408,7 @@
 
       var price = document.createElement("p");
       price.className = "catalog-card-price";
-      var unit = priceForItem(item);
+      var unit = Site ? Site.priceForCategory(item.category, item.productType) : 0;
       price.textContent = unit ? "$" + unit.toFixed(2) : "";
 
       meta.appendChild(topRow);
@@ -521,25 +450,20 @@
 
     try {
       var imagePath = item.src.replace(/^\//, "");
-      try {
-        var imageFile = await githubApi(imagePath);
-        await deleteGithubFile(
-          imagePath,
-          imageFile.sha,
-          "Remove catalog photo: " + (item.title || imagePath)
-        );
-      } catch (err) {
-        // Image may already be gone; still update catalog-data.js
-      }
+      await Gh.deleteFile(
+        githubToken,
+        imagePath,
+        "Remove catalog photo: " + (item.title || imagePath)
+      );
 
-      var dataFile = await getCatalogFile();
-      var text = base64ToUtf8(dataFile.content.replace(/\n/g, ""));
-      var items = parseCatalogData(text).filter(function (entry) {
+      var dataFile = await Gh.api(githubToken, DATA_PATH);
+      var items = parseCatalogData(Gh.fileText(dataFile)).filter(function (entry) {
         return entry.id !== item.id && entry.src !== item.src;
       });
-      await putGithubFile(
-        GITHUB.dataPath,
-        utf8ToBase64(serializeCatalogData(items)),
+      await Gh.putFile(
+        githubToken,
+        DATA_PATH,
+        Gh.utf8ToBase64(serializeCatalogData(items)),
         "Update catalog-data.js after removing " + (item.title || item.id),
         dataFile.sha
       );
@@ -556,21 +480,17 @@
     }
   }
 
-  function titleForUpload(file, index, total) {
+  function titleForUpload(index, total) {
     var custom = nameInput ? nameInput.value.trim() : "";
-    if (custom) {
-      if (total > 1) return custom + " " + (index + 1);
-      return custom;
-    }
-    return titleFromFile(file);
+    return total > 1 ? custom + " " + (index + 1) : custom;
   }
 
   async function uploadOneFile(file, category, productType, index, total) {
-    var compressed = await compressImage(file);
+    var compressed = await Img.compress(file, { maxSide: 1600 });
     var stem = safeFileStem(file.name);
     var filename = stem + "-" + Date.now() + compressed.ext;
     var imagePath = "assets/catalog/" + category + "/" + filename;
-    var title = titleForUpload(file, index, total);
+    var title = titleForUpload(index, total);
     var id = category + "-" + stem + "-" + Date.now() + "-" + index;
 
     setStatus(
@@ -578,15 +498,15 @@
       "busy"
     );
 
-    await putGithubFile(
+    await Gh.putFile(
+      githubToken,
       imagePath,
       compressed.base64,
       "Add catalog photo (" + category + "): " + filename
     );
 
-    var dataFile = await getCatalogFile();
-    var text = base64ToUtf8(dataFile.content.replace(/\n/g, ""));
-    var items = parseCatalogData(text);
+    var dataFile = await Gh.api(githubToken, DATA_PATH);
+    var items = parseCatalogData(Gh.fileText(dataFile));
     var entry = {
       id: id,
       title: title,
@@ -596,9 +516,10 @@
     if (productType) entry.productType = productType;
     items.push(entry);
 
-    await putGithubFile(
-      GITHUB.dataPath,
-      utf8ToBase64(serializeCatalogData(items)),
+    await Gh.putFile(
+      githubToken,
+      DATA_PATH,
+      Gh.utf8ToBase64(serializeCatalogData(items)),
       "Add " + title + " to catalog-data.js",
       dataFile.sha
     );
@@ -612,13 +533,13 @@
     if (!isAdmin || uploading) return;
 
     var category = categorySelect ? categorySelect.value : "badge-pins";
-    if (UPLOAD_CATEGORIES.indexOf(category) === -1) {
+    if (UPLOAD_IDS.indexOf(category) === -1) {
       setStatus("Pick a valid category first.", "error");
       return;
     }
 
     var productType = "";
-    if (isThemeCategory(category)) {
+    if (Site && Site.isThemeCategory(category)) {
       productType = typeSelect ? typeSelect.value : "";
       if (productType !== "pin" && productType !== "magnet") {
         setStatus("Choose Pin or Magnet for this category.", "error");
@@ -637,7 +558,7 @@
     }
 
     var files = Array.prototype.slice.call(fileList || []).filter(function (f) {
-      return f.type && f.type.indexOf("image/") === 0;
+      return Img && Img.isImage(f);
     });
 
     if (files.length === 0) {
@@ -686,58 +607,17 @@
     }
   }
 
-  if (adminOpen) {
-    adminOpen.addEventListener("click", function () {
-      if (adminLogin) adminLogin.hidden = false;
-      adminOpen.hidden = true;
-      if (adminError) {
-        adminError.hidden = true;
-        adminError.textContent = "";
-      }
-      if (adminPassword) adminPassword.focus();
-    });
-  }
-
-  if (adminCancel) {
-    adminCancel.addEventListener("click", function () {
-      if (adminLogin) adminLogin.hidden = true;
-      if (adminOpen) adminOpen.hidden = false;
-      if (adminError) {
-        adminError.hidden = true;
-        adminError.textContent = "";
-      }
-      if (adminPassword) adminPassword.value = "";
-      if (adminToken) adminToken.value = "";
-    });
-  }
-
-  if (adminLogin) {
-    adminLogin.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      var password = adminPassword ? adminPassword.value : "";
-      var token = adminToken ? adminToken.value.trim() : "";
-
-      if (password !== ADMIN_PASSWORD) {
-        showLoginError("Incorrect password. Try again.");
-        return;
-      }
-      if (!token) {
-        showLoginError("Paste a GitHub token with Contents write access.");
-        return;
-      }
-
-      showLoginError("Checking GitHub access…");
-      try {
-        await verifyGithubToken(token);
-        loginAdmin(token);
-      } catch (err) {
-        showLoginError(err.message || "Could not verify GitHub token.");
-      }
-    });
+  if (Admin && Gh) {
+    Admin.bindLogin("catalogAdmin", async function (token) {
+      await Gh.verifyToken(token);
+      setAdmin(token);
+    }, "Admin login");
   }
 
   if (adminLogout) {
-    adminLogout.addEventListener("click", logoutAdmin);
+    adminLogout.addEventListener("click", function () {
+      setAdmin("");
+    });
   }
 
   if (fileInput) {
@@ -746,7 +626,13 @@
     });
   }
 
-  if (categorySelect) {
+  if (categorySelect && UPLOAD_CATEGORIES.length) {
+    UPLOAD_CATEGORIES.forEach(function (cat) {
+      var option = document.createElement("option");
+      option.value = cat.id;
+      option.textContent = cat.label;
+      categorySelect.appendChild(option);
+    });
     categorySelect.addEventListener("change", syncTypeSelect);
     syncTypeSelect();
   }
@@ -771,16 +657,7 @@
     });
   }
 
-  try {
-    if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "1") {
-      githubToken = sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
-      isAdmin = !!githubToken;
-    }
-  } catch (err) {
-    isAdmin = false;
-    githubToken = "";
-  }
-
+  bindLightbox();
   renderFilters();
   setAdminUI();
 })();

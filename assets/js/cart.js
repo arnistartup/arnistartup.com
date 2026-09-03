@@ -1,36 +1,9 @@
 (function () {
   var STORAGE_KEY = "arniCart";
-  var SHIPPING_COST = 8;
-
-  var CATEGORY_PRICES = {
-    "badge-pins": 2,
-    magnets: 3,
-    keychains: 4,
-    bracelets: 5,
-    earrings: 3
-  };
-
-  var TYPE_PRICES = {
-    pin: 2,
-    magnet: 3
-  };
-
-  var TYPE_LABELS = {
-    pin: "Pin",
-    magnet: "Magnet"
-  };
-
-  var THEME_CATEGORIES = ["hindu-god", "happy-birthday"];
-
-  var CATEGORY_LABELS = {
-    "badge-pins": "Badge pins",
-    magnets: "Magnets",
-    keychains: "Keychains",
-    bracelets: "Bracelets",
-    earrings: "Earrings",
-    "hindu-god": "Hindu God",
-    "happy-birthday": "Happy Birthday"
-  };
+  var Site = window.ArniSite;
+  if (!Site) return;
+  var SHIPPING_COST = Site.SHIPPING_COST;
+  var SHOP_EMAIL = Site.SHOP_EMAIL;
 
   var cart = loadCart();
 
@@ -49,6 +22,10 @@
   var placeBtn = document.getElementById("cartPlaceOrder");
   var statusEl = document.getElementById("cartStatus");
   var honeypot = document.getElementById("cartWebsite");
+  var lastFocus = null;
+
+  var FOCUSABLE =
+    'a[href], button:not([disabled]), input:not([disabled]):not([type="hidden"]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
   function loadCart() {
     try {
@@ -65,25 +42,6 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(cart));
     } catch (err) {}
     updateCount();
-  }
-
-  function priceForCategory(category, productType) {
-    if (THEME_CATEGORIES.indexOf(category) !== -1) {
-      return TYPE_PRICES[productType] || TYPE_PRICES.magnet;
-    }
-    return CATEGORY_PRICES[category] || 0;
-  }
-
-  function isThemeCategory(category) {
-    return THEME_CATEGORIES.indexOf(category) !== -1;
-  }
-
-  function labelForItem(item) {
-    var typeLabel = TYPE_LABELS[item.productType];
-    if (isThemeCategory(item.category) && typeLabel) {
-      return typeLabel;
-    }
-    return CATEGORY_LABELS[item.category] || item.category || "";
   }
 
   function cartCount() {
@@ -118,24 +76,32 @@
   }
 
   function setStatus(message, kind) {
-    if (!statusEl) return;
-    if (!message) {
-      statusEl.hidden = true;
-      statusEl.textContent = "";
-      statusEl.className = "cart-status";
-      return;
-    }
-    statusEl.hidden = false;
-    statusEl.textContent = message;
-    statusEl.className = "cart-status" + (kind ? " is-" + kind : "");
+    if (Site) Site.setStatus(statusEl, "cart-status", message, kind);
+  }
+
+  function focusableInDrawer() {
+    if (!drawer) return [];
+    return Array.prototype.slice.call(drawer.querySelectorAll(FOCUSABLE)).filter(
+      function (el) {
+        if (el.closest("[hidden]") || el.getAttribute("aria-hidden") === "true") {
+          return false;
+        }
+        if (el.tabIndex === -1) return false;
+        return !!(el.offsetWidth || el.offsetHeight || el.getClientRects().length);
+      }
+    );
   }
 
   function openCart() {
     if (!drawer || !backdrop) return;
+    lastFocus = document.activeElement;
     drawer.hidden = false;
     backdrop.hidden = false;
     document.body.classList.add("cart-open");
+    if (openBtn) openBtn.setAttribute("aria-expanded", "true");
     renderCart();
+    var target = closeBtn || focusableInDrawer()[0];
+    if (target) target.focus();
   }
 
   function closeCart() {
@@ -143,7 +109,12 @@
     drawer.hidden = true;
     backdrop.hidden = true;
     document.body.classList.remove("cart-open");
+    if (openBtn) openBtn.setAttribute("aria-expanded", "false");
     setStatus("");
+    if (lastFocus && typeof lastFocus.focus === "function") {
+      lastFocus.focus();
+    }
+    lastFocus = null;
   }
 
   function addItem(item) {
@@ -158,7 +129,7 @@
         title: item.title || "Handmade piece",
         category: item.category,
         src: item.src,
-        unitPrice: priceForCategory(item.category, item.productType),
+        unitPrice: Site.priceForCategory(item.category, item.productType),
         quantity: 1
       };
       if (item.productType) entry.productType = item.productType;
@@ -226,7 +197,7 @@
       var meta = document.createElement("p");
       meta.className = "cart-item-meta";
       meta.textContent =
-        labelForItem(item) + " · $" + item.unitPrice.toFixed(2) + " each";
+        Site.labelForItem(item) + " · $" + item.unitPrice.toFixed(2) + " each";
 
       var controls = document.createElement("div");
       controls.className = "cart-item-controls";
@@ -308,38 +279,17 @@
       setStatus("Please enter your name and email.", "error");
       return;
     }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (Site && Site.filledHoneypot(honeypot)) return;
+
+    if (!Site || !Site.isValidEmail(email)) {
       setStatus("Please enter a valid email address.", "error");
       return;
     }
-    if (honeypot && honeypot.value !== "") return;
-
-    var lastSent = Number(sessionStorage.getItem("lastOrderSent") || 0);
-    if (Date.now() - lastSent < 30000) {
+    if (Site.isOrderThrottled()) {
       setStatus("Please wait a moment before sending another request.", "error");
       return;
     }
 
-    if (typeof emailjs === "undefined" || !emailjs.send) {
-      setStatus("Order service is unavailable. Email arni.startup@gmail.com.", "error");
-      return;
-    }
-
-    var productSummary = cart
-      .map(function (item) {
-        return item.title;
-      })
-      .join(", ");
-    var quantitySummary = cart
-      .map(function (item) {
-        return item.title + ": " + item.quantity;
-      })
-      .join("; ");
-    var unitPriceSummary = cart
-      .map(function (item) {
-        return item.title + ": $" + item.unitPrice.toFixed(2) + " each";
-      })
-      .join("; ");
     var shippingCost = shippingSelected() ? SHIPPING_COST : 0;
     var orderTotal = cartTotal();
 
@@ -350,20 +300,17 @@
     setStatus("Sending your order request…", "busy");
 
     try {
-      await emailjs.send("service_cuki6nm", "template_5pzor48", {
+      await Site.sendShopEmail({
         subject: "New Bulk Order from " + name,
         name: name,
         email: email,
-        product: productSummary,
-        quantity: quantitySummary,
-        unit_price: unitPriceSummary,
-        shipping_cost: shippingCost > 0 ? "$" + shippingCost.toFixed(2) : "No shipping",
+        items: cart,
+        shipping_cost: Site.shippingLabel(shippingCost),
         estimated_total: "$" + orderTotal.toFixed(2),
-        notes: notes || "Catalog cart order",
-        to_email: "arni.startup@gmail.com"
+        notes: notes || "Catalog cart order"
       });
 
-      sessionStorage.setItem("lastOrderSent", String(Date.now()));
+      Site.markOrderSent();
       cart = [];
       saveCart();
       renderCart();
@@ -378,7 +325,9 @@
     } catch (err) {
       console.error(err);
       setStatus(
-        "Something went wrong. Please email arni.startup@gmail.com.",
+        err && err.message === "EMAILJS_UNAVAILABLE"
+          ? "Order service is unavailable. Email " + SHOP_EMAIL + "."
+          : "Something went wrong. Please email " + SHOP_EMAIL + ".",
         "error"
       );
     } finally {
@@ -392,20 +341,43 @@
   if (openBtn) openBtn.addEventListener("click", openCart);
   if (closeBtn) closeBtn.addEventListener("click", closeCart);
   if (backdrop) backdrop.addEventListener("click", closeCart);
+  if (emptyEl) {
+    emptyEl.addEventListener("click", function (e) {
+      var link = e.target.closest("a[href='#catalog']");
+      if (link) closeCart();
+    });
+  }
   if (shippingInput) {
     shippingInput.addEventListener("change", renderCart);
   }
   if (placeBtn) placeBtn.addEventListener("click", placeOrder);
 
+  if (drawer) {
+    drawer.addEventListener("keydown", function (e) {
+      if (e.key !== "Tab" || drawer.hidden) return;
+      var nodes = focusableInDrawer();
+      if (!nodes.length) return;
+      var first = nodes[0];
+      var last = nodes[nodes.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    });
+  }
+
   document.addEventListener("keydown", function (e) {
-    if (e.key === "Escape" && drawer && !drawer.hidden) closeCart();
+    if (e.key === "Escape" && drawer && !drawer.hidden) {
+      e.preventDefault();
+      closeCart();
+    }
   });
 
   window.ArniCart = {
-    addItem: addItem,
-    priceForCategory: priceForCategory,
-    labelForItem: labelForItem,
-    isThemeCategory: isThemeCategory
+    addItem: addItem
   };
 
   updateCount();

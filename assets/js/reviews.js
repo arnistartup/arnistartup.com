@@ -1,14 +1,10 @@
 (function () {
-  var ADMIN_SESSION_KEY = "arniReviewsAdmin";
-  var ADMIN_TOKEN_KEY = "arniReviewsGithubToken";
-  var ADMIN_PASSWORD = "arniadmin";
-
-  var GITHUB = {
-    owner: "arnistartup",
-    repo: "arnistartup.com",
-    branch: "main",
-    dataPath: "assets/js/reviews-data.js"
-  };
+  var Admin = window.ArniAdminGate;
+  var Gh = window.ArniGithub;
+  var Img = window.ArniImages;
+  var Site = window.ArniSite;
+  var SHOP_EMAIL = Site ? Site.SHOP_EMAIL : "";
+  var DATA_PATH = "assets/js/reviews-data.js";
 
   var published = Array.isArray(window.ARNI_REVIEWS_SEED)
     ? window.ARNI_REVIEWS_SEED.slice()
@@ -21,9 +17,12 @@
   var empty = document.getElementById("reviewsEmpty");
   var form = document.getElementById("reviewForm");
   var formTitle = document.getElementById("reviewFormTitle");
-  var formGrid = form && form.querySelector(".review-form-grid");
+  var identityGrid = document.getElementById("reviewIdentityGrid");
   var nameInput = document.getElementById("reviewName");
   var nameLabel = document.getElementById("reviewNameLabel");
+  var ratingInput = document.getElementById("reviewRating");
+  var locationInput = document.getElementById("reviewLocation");
+  var locationLabel = document.getElementById("reviewLocationLabel");
   var emailField = document.getElementById("reviewEmailField");
   var emailInput = document.getElementById("reviewEmail");
   var textInput = document.getElementById("reviewText");
@@ -38,26 +37,10 @@
   var honeypot = document.getElementById("reviewWebsite");
   var formLogout = document.getElementById("reviewsFormLogout");
 
-  var adminOpen = document.getElementById("reviewsAdminOpen");
-  var adminLogin = document.getElementById("reviewsAdminLogin");
-  var adminPassword = document.getElementById("reviewsAdminPassword");
-  var adminToken = document.getElementById("reviewsAdminToken");
-  var adminError = document.getElementById("reviewsAdminError");
-  var adminCancel = document.getElementById("reviewsAdminCancel");
-
   if (!grid || !form) return;
 
   function setStatus(message, kind) {
-    if (!statusEl) return;
-    if (!message) {
-      statusEl.hidden = true;
-      statusEl.textContent = "";
-      statusEl.className = "reviews-status";
-      return;
-    }
-    statusEl.hidden = false;
-    statusEl.textContent = message;
-    statusEl.className = "reviews-status" + (kind ? " is-" + kind : "");
+    if (Site) Site.setStatus(statusEl, "reviews-status", message, kind);
   }
 
   function submitLabel() {
@@ -71,16 +54,87 @@
     submitBtn.textContent = label || submitLabel();
   }
 
-  function slugify(value, maxLen) {
-    return String(value || "customer")
-      .toLowerCase()
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/^-+|-+$/g, "")
-      .slice(0, maxLen || 24);
+  function setText(el, value) {
+    if (el) el.textContent = value;
+  }
+
+  function setPlaceholder(el, value) {
+    if (el) el.placeholder = value;
+  }
+
+  // Reviews published before ratings existed are treated as five stars.
+  function ratingOf(review) {
+    var value = Math.round(Number(review && review.rating));
+    if (!value || value < 1) return 5;
+    return Math.min(5, value);
+  }
+
+  function starsEl(rating) {
+    var el = document.createElement("p");
+    el.className = "review-card-stars";
+    el.setAttribute("role", "img");
+    el.setAttribute("aria-label", rating + " out of 5 stars");
+    for (var i = 1; i <= 5; i++) {
+      var star = document.createElement("span");
+      if (i > rating) star.className = "is-empty";
+      star.textContent = i > rating ? "☆" : "★";
+      el.appendChild(star);
+    }
+    return el;
+  }
+
+  function attributionText(review) {
+    var who = review.name || "Customer";
+    return review.location ? "— " + who + ", " + review.location : "— " + who;
+  }
+
+  function formatReviewDate(value) {
+    var match = String(value || "").match(/^(\d{4})-(\d{2})-(\d{2})/);
+    if (!match) return value || "";
+    var date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    if (isNaN(date.getTime())) return value;
+    return date.toLocaleDateString("en-US", {
+      month: "long",
+      day: "numeric",
+      year: "numeric"
+    });
   }
 
   function isRemotePhotoUrl(src) {
     return /^https?:\/\//i.test(String(src || ""));
+  }
+
+  function localReviewWebpPath(src) {
+    if (!src || isRemotePhotoUrl(src)) return "";
+    var match = String(src).match(/^(assets\/reviews\/[^/?#]+)(\.jpe?g|\.png)$/i);
+    return match ? match[1] + ".webp" : "";
+  }
+
+  function localReviewPhotoPaths(src) {
+    var paths = [];
+    if (src && src.indexOf("assets/reviews/") === 0) paths.push(src);
+    var webp = localReviewWebpPath(src);
+    if (webp) paths.push(webp);
+    return paths;
+  }
+
+  function reviewPhotoEl(review) {
+    var img = document.createElement("img");
+    img.src = review.src;
+    img.alt = "Photo from " + (review.name || "a customer");
+    img.loading = "lazy";
+    img.decoding = "async";
+
+    var webpSrc = localReviewWebpPath(review.src);
+    if (!webpSrc) return img;
+
+    var picture = document.createElement("picture");
+    var source = document.createElement("source");
+    source.type = "image/webp";
+    source.srcset = webpSrc;
+    picture.appendChild(source);
+    picture.appendChild(img);
+    return picture;
   }
 
   function configImgbbKey() {
@@ -94,7 +148,7 @@
     if (!key) throw new Error("IMGBB_NOT_CONFIGURED");
     var body = new FormData();
     body.append("image", base64);
-    if (name) body.append("name", slugify(name, 40));
+    if (name && Site) body.append("name", Site.slugify(name, 40));
     var res = await fetch(
       "https://api.imgbb.com/1/upload?key=" + encodeURIComponent(key),
       { method: "POST", body: body }
@@ -112,174 +166,24 @@
     return { url: data.data.display_url || data.data.url };
   }
 
-  function readFileAsDataURL(file) {
-    return new Promise(function (resolve, reject) {
-      var reader = new FileReader();
-      reader.onload = function () {
-        resolve(reader.result);
-      };
-      reader.onerror = reject;
-      reader.readAsDataURL(file);
-    });
-  }
-
-  function loadImage(dataUrl) {
-    return new Promise(function (resolve, reject) {
-      var img = new Image();
-      img.onload = function () {
-        resolve(img);
-      };
-      img.onerror = reject;
-      img.src = dataUrl;
-    });
-  }
-
-  async function compressImage(file, maxSide, quality) {
-    var dataUrl = await readFileAsDataURL(file);
-    var img = await loadImage(dataUrl);
-    var scale = Math.min(1, maxSide / Math.max(img.width, img.height));
-    var width = Math.max(1, Math.round(img.width * scale));
-    var height = Math.max(1, Math.round(img.height * scale));
-    var canvas = document.createElement("canvas");
-    canvas.width = width;
-    canvas.height = height;
-    canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-    var out = canvas.toDataURL("image/jpeg", quality);
-    return {
-      dataUrl: out,
-      base64: out.split(",")[1],
-      ext: ".jpg"
-    };
-  }
-
-  function utf8ToBase64(text) {
-    return btoa(unescape(encodeURIComponent(text)));
-  }
-
-  function base64ToUtf8(b64) {
-    return decodeURIComponent(escape(atob(b64)));
-  }
-
   function parseReviewsData(text) {
-    var match = String(text).match(
-      /ARNI_REVIEWS_SEED\s*=\s*(\[[\s\S]*\])\s*;?\s*$/
-    );
-    if (!match) throw new Error("Could not find reviews list");
-    return JSON.parse(match[1]);
+    return Gh.parseSeedArray(text, "ARNI_REVIEWS_SEED", "reviews-data.js");
   }
 
   function serializeReviewsData(items) {
-    return "window.ARNI_REVIEWS_SEED = " + JSON.stringify(items, null, 2) + ";\n";
-  }
-
-  function friendlyGithubError(message, status) {
-    var msg = String(message || "");
-    if (
-      msg.toLowerCase().indexOf("resource not accessible") !== -1 ||
-      status === 403
-    ) {
-      return "GitHub token cannot write to this repo. Use a classic token with public_repo.";
-    }
-    return msg || "GitHub request failed (" + status + ")";
-  }
-
-  async function githubApi(path, options) {
-    options = options || {};
-    if (!githubToken) throw new Error("GitHub token is missing.");
-    var res = await fetch(
-      "https://api.github.com/repos/" +
-        GITHUB.owner +
-        "/" +
-        GITHUB.repo +
-        "/contents/" +
-        path,
-      {
-        method: options.method || "GET",
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: "Bearer " + githubToken,
-          "X-GitHub-Api-Version": "2022-11-28",
-          "Content-Type": "application/json"
-        },
-        body: options.body ? JSON.stringify(options.body) : undefined
-      }
-    );
-    var data = null;
-    try {
-      data = await res.json();
-    } catch (err) {}
-    if (!res.ok) {
-      var error = new Error(friendlyGithubError(data && data.message, res.status));
-      error.status = res.status;
-      throw error;
-    }
-    return data;
+    return Gh.serializeSeedArray("ARNI_REVIEWS_SEED", items);
   }
 
   async function getOrCreateReviewsData() {
     try {
-      var dataFile = await githubApi(GITHUB.dataPath);
+      var dataFile = await Gh.api(githubToken, DATA_PATH);
       return {
-        items: parseReviewsData(
-          base64ToUtf8(dataFile.content.replace(/\n/g, ""))
-        ),
+        items: parseReviewsData(Gh.fileText(dataFile)),
         sha: dataFile.sha
       };
     } catch (err) {
       if (err && err.status === 404) return { items: [], sha: null };
       throw err;
-    }
-  }
-
-  async function putGithubFile(path, contentBase64, message, sha) {
-    var body = {
-      message: message,
-      content: contentBase64,
-      branch: GITHUB.branch
-    };
-    if (sha) body.sha = sha;
-    return githubApi(path, { method: "PUT", body: body });
-  }
-
-  async function deleteGithubFile(path, message) {
-    try {
-      var existing = await githubApi(path);
-      await githubApi(path, {
-        method: "DELETE",
-        body: {
-          message: message,
-          sha: existing.sha,
-          branch: GITHUB.branch
-        }
-      });
-    } catch (err) {
-      if (!err || err.status !== 404) throw err;
-    }
-  }
-
-  async function verifyGithubToken(token) {
-    var res = await fetch(
-      "https://api.github.com/repos/" + GITHUB.owner + "/" + GITHUB.repo,
-      {
-        headers: {
-          Accept: "application/vnd.github+json",
-          Authorization: "Bearer " + token,
-          "X-GitHub-Api-Version": "2022-11-28"
-        }
-      }
-    );
-    if (!res.ok) {
-      var data = null;
-      try {
-        data = await res.json();
-      } catch (err) {}
-      throw new Error(friendlyGithubError(data && data.message, res.status));
-    }
-    var repo = await res.json();
-    if (!repo.permissions || !repo.permissions.push) {
-      throw new Error(
-        "This token can view the repo but cannot push. Use public_repo scope."
-      );
     }
   }
 
@@ -316,21 +220,22 @@
         var body = document.createElement("div");
         body.className = "review-card-body";
 
-        var who = document.createElement("h3");
-        who.className = "review-card-name";
-        who.textContent = review.name || "Customer";
-
-        var quote = document.createElement("p");
+        var quote = document.createElement("blockquote");
         quote.className = "review-card-text";
         quote.textContent = "“" + (review.text || "") + "”";
 
-        body.appendChild(who);
+        var who = document.createElement("p");
+        who.className = "review-card-attribution";
+        who.textContent = attributionText(review);
+
+        body.appendChild(starsEl(ratingOf(review)));
         body.appendChild(quote);
+        body.appendChild(who);
 
         if (review.date) {
           var date = document.createElement("p");
           date.className = "review-card-date";
-          date.textContent = review.date;
+          date.textContent = formatReviewDate(review.date);
           body.appendChild(date);
         }
 
@@ -348,40 +253,34 @@
           body.appendChild(actions);
         }
 
-        var img = document.createElement("img");
-        img.src = review.src;
-        img.alt = "Photo from " + (review.name || "a customer");
-        img.loading = "lazy";
-
         card.appendChild(body);
-        card.appendChild(img);
+        card.appendChild(reviewPhotoEl(review));
         grid.appendChild(card);
       });
   }
 
   function setAdminUI() {
-    if (adminOpen) adminOpen.hidden = isAdmin;
-    if (adminLogin) adminLogin.hidden = true;
+    if (Admin) Admin.showChrome("reviewsAdmin", isAdmin);
     if (formLogout) formLogout.hidden = !isAdmin;
-    if (adminError) {
-      adminError.hidden = true;
-      adminError.textContent = "";
-    }
-    if (adminPassword) adminPassword.value = "";
-    if (adminToken) adminToken.value = "";
 
-    if (formTitle) {
-      formTitle.textContent = isAdmin ? "Approve review" : "Write a review";
-    }
-    if (nameLabel) {
-      nameLabel.textContent = isAdmin ? "Name *" : "Your name *";
-    }
-    if (textLabel) {
-      textLabel.textContent = isAdmin ? "Review *" : "Your review *";
-    }
-    if (photoLabel) {
-      photoLabel.textContent = isAdmin ? "Photo" : "Photo *";
-    }
+    setText(formTitle, isAdmin ? "Approve review" : "Write a review");
+    setText(nameLabel, isAdmin ? "Name *" : "Your name *");
+    setText(textLabel, isAdmin ? "Review *" : "Your review *");
+    setText(photoLabel, isAdmin ? "Photo" : "Photo *");
+    setText(locationLabel, isAdmin ? "Location" : "Where you're from");
+    setPlaceholder(
+      locationInput,
+      isAdmin ? "From the review email" : "e.g. Massachusetts"
+    );
+    setPlaceholder(
+      nameInput,
+      isAdmin ? "From the review email" : "e.g. Arjun Vardha"
+    );
+    setPlaceholder(
+      textInput,
+      isAdmin ? "From the review email" : "We loved our custom badges!"
+    );
+
     if (emailField) emailField.hidden = isAdmin;
     if (emailInput) {
       emailInput.required = !isAdmin;
@@ -390,51 +289,29 @@
     if (imageUrlField) imageUrlField.hidden = !isAdmin;
     if (imageUrlInput && !isAdmin) imageUrlInput.value = "";
     if (fileInput) fileInput.required = !isAdmin;
-    if (formGrid) formGrid.classList.toggle("is-admin-publish", isAdmin);
+    if (identityGrid) identityGrid.classList.toggle("is-admin-publish", isAdmin);
     if (submitBtn && !busy) submitBtn.textContent = submitLabel();
-    if (nameInput) {
-      nameInput.placeholder = isAdmin
-        ? "From the review email"
-        : "e.g. Arjun Vardha";
-    }
-    if (textInput) {
-      textInput.placeholder = isAdmin
-        ? "From the review email"
-        : "We loved our custom badges!";
-    }
 
     renderPublished();
   }
 
-  function loginAdmin(token) {
-    isAdmin = true;
-    githubToken = token;
-    try {
-      sessionStorage.setItem(ADMIN_SESSION_KEY, "1");
-      sessionStorage.setItem(ADMIN_TOKEN_KEY, token);
-    } catch (err) {}
+  function setAdmin(token) {
+    githubToken = token || "";
+    isAdmin = !!githubToken;
     setAdminUI();
   }
 
-  function logoutAdmin() {
-    isAdmin = false;
-    githubToken = "";
-    try {
-      sessionStorage.removeItem(ADMIN_SESSION_KEY);
-      sessionStorage.removeItem(ADMIN_TOKEN_KEY);
-    } catch (err) {}
-    setAdminUI();
+  function requireToken() {
+    if (githubToken) return true;
+    setStatus("Please log in again with your GitHub token.", "error");
+    return false;
   }
 
   async function deletePublishedReview(review) {
-    if (!isAdmin || busy) return;
-    if (!githubToken) {
-      setStatus("Please log in again with your GitHub token.", "error");
-      return;
-    }
+    if (!isAdmin || busy || !requireToken()) return;
     var label = (review && review.name) || "this review";
     if (
-      !window.confirm(
+      !confirm(
         "Delete the published review from " +
           label +
           "? This removes it from the site and GitHub."
@@ -452,18 +329,21 @@
         return !(item.src === review.src && item.name === review.name);
       });
 
-      await putGithubFile(
-        GITHUB.dataPath,
-        utf8ToBase64(serializeReviewsData(items)),
+      await Gh.putFile(
+        githubToken,
+        DATA_PATH,
+        Gh.utf8ToBase64(serializeReviewsData(items)),
         "Delete review from " + label,
         existing.sha || undefined
       );
 
-      if (review.src && review.src.indexOf("assets/reviews/") === 0) {
+      var photoPaths = localReviewPhotoPaths(review.src);
+      for (var i = 0; i < photoPaths.length; i++) {
         try {
-          await deleteGithubFile(
-            review.src,
-            "Delete review photo: " + review.src.split("/").pop()
+          await Gh.deleteFile(
+            githubToken,
+            photoPaths[i],
+            "Delete review photo: " + photoPaths[i].split("/").pop()
           );
         } catch (err) {
           console.warn("Removed from list, but photo delete failed", err);
@@ -486,11 +366,7 @@
   }
 
   async function publishReview(item) {
-    if (!isAdmin || busy) return;
-    if (!githubToken) {
-      setStatus("Please log in again with your GitHub token.", "error");
-      return;
-    }
+    if (!isAdmin || busy || !requireToken()) return;
 
     setBusy(true, "Publishing…");
     setStatus("Publishing approved review to the site…", "busy");
@@ -501,10 +377,11 @@
           "review-" +
           Date.now() +
           "-" +
-          slugify(item.name) +
+          (Site ? Site.slugify(item.name) : "customer") +
           (item.ext || ".jpg");
         imagePath = "assets/reviews/" + filename;
-        await putGithubFile(
+        await Gh.putFile(
+          githubToken,
           imagePath,
           item.base64,
           "Publish review photo: " + filename
@@ -517,17 +394,21 @@
 
       var existing = await getOrCreateReviewsData();
       var items = existing.items;
-      items.push({
+      var entry = {
         id: item.id || "review-" + Date.now(),
         name: item.name,
+        rating: ratingOf(item),
         text: item.text,
         src: imagePath,
         date: new Date().toISOString().slice(0, 10)
-      });
+      };
+      if (item.location) entry.location = item.location;
+      items.push(entry);
 
-      await putGithubFile(
-        GITHUB.dataPath,
-        utf8ToBase64(serializeReviewsData(items)),
+      await Gh.putFile(
+        githubToken,
+        DATA_PATH,
+        Gh.utf8ToBase64(serializeReviewsData(items)),
         "Publish review from " + item.name,
         existing.sha || undefined
       );
@@ -548,222 +429,198 @@
     }
   }
 
-  if (fileInput) {
-    fileInput.addEventListener("change", async function () {
-      var file = fileInput.files && fileInput.files[0];
-      if (!preview) return;
-      if (!file) {
-        var url = imageUrlInput && imageUrlInput.value.trim();
-        if (url) {
-          showPreview(url);
+  function bindReviewForm() {
+    if (fileInput) {
+      fileInput.addEventListener("change", async function () {
+        var file = fileInput.files && fileInput.files[0];
+        if (!preview) return;
+        if (!file) {
+          var url = imageUrlInput && imageUrlInput.value.trim();
+          if (url) {
+            showPreview(url);
+            return;
+          }
+          clearPreview();
           return;
         }
-        clearPreview();
-        return;
-      }
-      if (!file.type || file.type.indexOf("image/") !== 0) {
-        setStatus("Please choose an image file.", "error");
-        fileInput.value = "";
-        clearPreview();
-        return;
-      }
-      try {
-        var compressed = await compressImage(file, 800, 0.75);
-        showPreview(compressed.dataUrl, "Selected photo preview");
-        setStatus("");
-      } catch (err) {
-        clearPreview();
-        setStatus("Could not read that image. Try another photo.", "error");
-      }
-    });
-  }
-
-  if (imageUrlInput) {
-    imageUrlInput.addEventListener("input", function () {
-      var url = imageUrlInput.value.trim();
-      if (!url) {
-        if (!(fileInput && fileInput.files && fileInput.files[0])) clearPreview();
-        return;
-      }
-      showPreview(url);
-    });
-  }
-
-  form.addEventListener("submit", async function (e) {
-    e.preventDefault();
-    if (busy) return;
-
-    var name = nameInput ? nameInput.value.trim() : "";
-    var email = emailInput ? emailInput.value.trim() : "";
-    var text = textInput ? textInput.value.trim() : "";
-    var file = fileInput && fileInput.files && fileInput.files[0];
-    var imageUrl = imageUrlInput ? imageUrlInput.value.trim() : "";
-
-    if (honeypot && honeypot.value !== "") return;
-
-    if (isAdmin) {
-      if (!name || !text) {
-        setStatus("Name and review are required.", "error");
-        return;
-      }
-      if (!file && !imageUrl) {
-        setStatus("Attach a photo or paste a photo URL.", "error");
-        return;
-      }
-      try {
-        var payload = {
-          id: "review-" + Date.now(),
-          name: name,
-          text: text
-        };
-        if (file) {
-          var compressedAdmin = await compressImage(file, 1000, 0.85);
-          payload.base64 = compressedAdmin.base64;
-          payload.ext = compressedAdmin.ext;
-        } else {
-          payload.src = imageUrl;
+        if (!Img.isImage(file)) {
+          setStatus("Please choose an image file.", "error");
+          fileInput.value = "";
+          clearPreview();
+          return;
         }
-        await publishReview(payload);
+        try {
+          var compressed = await Img.compress(file, {
+            maxSide: 800,
+            mime: "image/jpeg",
+            quality: 0.75
+          });
+          showPreview(compressed.dataUrl, "Selected photo preview");
+          setStatus("");
+        } catch (err) {
+          clearPreview();
+          setStatus("Could not read that image. Try another photo.", "error");
+        }
+      });
+    }
+
+    if (imageUrlInput) {
+      imageUrlInput.addEventListener("input", function () {
+        var url = imageUrlInput.value.trim();
+        if (!url) {
+          if (!(fileInput && fileInput.files && fileInput.files[0])) clearPreview();
+          return;
+        }
+        showPreview(url);
+      });
+    }
+
+    form.addEventListener("submit", async function (e) {
+      e.preventDefault();
+      if (busy) return;
+
+      var name = nameInput ? nameInput.value.trim() : "";
+      var email = emailInput ? emailInput.value.trim() : "";
+      var text = textInput ? textInput.value.trim() : "";
+      var rating = ratingOf({ rating: ratingInput && ratingInput.value });
+      var location = locationInput ? locationInput.value.trim() : "";
+      var file = fileInput && fileInput.files && fileInput.files[0];
+      var imageUrl = imageUrlInput ? imageUrlInput.value.trim() : "";
+
+      if (Site && Site.filledHoneypot(honeypot)) return;
+
+      if (isAdmin) {
+        if (!name || !text) {
+          setStatus("Name and review are required.", "error");
+          return;
+        }
+        if (!file && !imageUrl) {
+          setStatus("Attach a photo or paste a photo URL.", "error");
+          return;
+        }
+        try {
+          var payload = {
+            id: "review-" + Date.now(),
+            name: name,
+            rating: rating,
+            location: location,
+            text: text
+          };
+          if (file) {
+            var compressedAdmin = await Img.compress(file, {
+              maxSide: 1000,
+              mime: "image/jpeg",
+              quality: 0.85
+            });
+            payload.base64 = compressedAdmin.base64;
+            payload.ext = compressedAdmin.ext;
+          } else {
+            payload.src = imageUrl;
+          }
+          await publishReview(payload);
+          form.reset();
+          clearPreview();
+          setAdminUI();
+        } catch (err) {
+          /* Status already shown by publishReview */
+        }
+        return;
+      }
+
+      if (!name || !email || !text) {
+        setStatus("Please fill in your name, email, and review.", "error");
+        return;
+      }
+      if (!Site || !Site.isValidEmail(email)) {
+        setStatus("Please enter a valid email address.", "error");
+        return;
+      }
+      if (!Img.isImage(file)) {
+        setStatus("Please attach an image file (JPG, PNG, or WEBP).", "error");
+        return;
+      }
+      if (!configImgbbKey()) {
+        setStatus(
+          "Photo upload is not set up yet. Please email " + SHOP_EMAIL + ".",
+          "error"
+        );
+        return;
+      }
+
+      setBusy(true, "Sending…");
+      setStatus("Submitting your review for approval…", "busy");
+
+      try {
+        var mobile = window.innerWidth < 700;
+        var compressed = await Img.compress(file, {
+          maxSide: mobile ? 800 : 900,
+          mime: "image/jpeg",
+          quality: mobile ? 0.62 : 0.7
+        });
+
+        setStatus("Uploading review photo…", "busy");
+        var uploaded = await uploadToImgbb(compressed.base64, name);
+
+        if (Site) {
+          setStatus("Sending email notification…", "busy");
+          try {
+            await Site.sendShopEmail({
+              subject: "Review received from " + name,
+              name: name,
+              email: email,
+              product: "Website Review",
+              quantity: "1 photo",
+              unit_price: "N/A",
+              shipping_cost: "N/A",
+              estimated_total: "N/A",
+              notes:
+                "Review received from " +
+                name +
+                (location ? " (" + location + ")" : "") +
+                "\nRating: " +
+                rating +
+                " of 5\n\n" +
+                text +
+                "\n\nPhoto:\n" +
+                uploaded.url
+            });
+          } catch (mailErr) {
+            if (!mailErr || mailErr.message !== "EMAILJS_UNAVAILABLE") throw mailErr;
+          }
+        }
+
         form.reset();
         clearPreview();
-        setAdminUI();
+        setStatus(
+          "Thank you! Your review was submitted and will appear on the site after we approve it.",
+          "ok"
+        );
       } catch (err) {
-        /* Status already shown by publishReview */
-      }
-      return;
-    }
-
-    if (!name || !email || !text) {
-      setStatus("Please fill in your name, email, and review.", "error");
-      return;
-    }
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
-      setStatus("Please enter a valid email address.", "error");
-      return;
-    }
-    if (!file || !file.type || file.type.indexOf("image/") !== 0) {
-      setStatus("Please attach an image file (JPG, PNG, or WEBP).", "error");
-      return;
-    }
-    if (!configImgbbKey()) {
-      setStatus(
-        "Photo upload is not set up yet. Please email arni.startup@gmail.com.",
-        "error"
-      );
-      return;
-    }
-
-    setBusy(true, "Sending…");
-    setStatus("Submitting your review for approval…", "busy");
-
-    try {
-      var mobile = window.innerWidth < 700;
-      var compressed = await compressImage(
-        file,
-        mobile ? 800 : 900,
-        mobile ? 0.62 : 0.7
-      );
-
-      setStatus("Uploading review photo…", "busy");
-      var uploaded = await uploadToImgbb(compressed.base64, name);
-
-      if (typeof emailjs !== "undefined" && emailjs.send) {
-        setStatus("Sending email notification…", "busy");
-        await emailjs.send("service_cuki6nm", "template_5pzor48", {
-          subject: "Review received from " + name,
-          name: name,
-          email: email,
-          product: "Website Review",
-          quantity: "1 photo",
-          unit_price: "N/A",
-          shipping_cost: "N/A",
-          estimated_total: "N/A",
-          notes:
-            "Review received from " +
-            name +
-            "\n\n" +
-            text +
-            "\n\nPhoto:\n" +
-            uploaded.url,
-          to_email: "arni.startup@gmail.com"
-        });
-      }
-
-      form.reset();
-      clearPreview();
-      setStatus(
-        "Thank you! Your review was submitted and will appear on the site after we approve it.",
-        "ok"
-      );
-    } catch (err) {
-      console.error(err);
-      setStatus(
-        "Could not send your review. Please email arni.startup@gmail.com.",
-        "error"
-      );
-    } finally {
-      setBusy(false);
-    }
-  });
-
-  if (adminOpen) {
-    adminOpen.addEventListener("click", function () {
-      if (adminLogin) adminLogin.hidden = false;
-      adminOpen.hidden = true;
-      if (adminPassword) adminPassword.focus();
-    });
-  }
-
-  if (adminCancel) {
-    adminCancel.addEventListener("click", function () {
-      if (adminLogin) adminLogin.hidden = true;
-      if (adminOpen) adminOpen.hidden = false;
-      if (adminError) {
-        adminError.hidden = true;
-        adminError.textContent = "";
+        console.error(err);
+        setStatus(
+          "Could not send your review. Please email " + SHOP_EMAIL + ".",
+          "error"
+        );
+      } finally {
+        setBusy(false);
       }
     });
   }
 
-  if (adminLogin) {
-    adminLogin.addEventListener("submit", async function (e) {
-      e.preventDefault();
-      var password = adminPassword ? adminPassword.value : "";
-      var token = adminToken ? adminToken.value.trim() : "";
-      if (password !== ADMIN_PASSWORD) {
-        if (adminError) {
-          adminError.hidden = false;
-          adminError.textContent = "Incorrect password. Try again.";
-        }
-        return;
-      }
-      if (!token) {
-        if (adminError) {
-          adminError.hidden = false;
-          adminError.textContent = "Paste a GitHub token with write access.";
-        }
-        return;
-      }
-      try {
-        await verifyGithubToken(token);
-        loginAdmin(token);
-      } catch (err) {
-        if (adminError) {
-          adminError.hidden = false;
-          adminError.textContent = err.message || "Could not verify token.";
-        }
-      }
-    });
+  bindReviewForm();
+
+  if (Admin && Gh) {
+    Admin.bindLogin("reviewsAdmin", async function (token) {
+      await Gh.verifyToken(token);
+      setAdmin(token);
+    }, "Approve review");
   }
 
-  if (formLogout) formLogout.addEventListener("click", logoutAdmin);
-
-  try {
-    if (sessionStorage.getItem(ADMIN_SESSION_KEY) === "1") {
-      githubToken = sessionStorage.getItem(ADMIN_TOKEN_KEY) || "";
-      isAdmin = !!githubToken;
-    }
-  } catch (err) {}
+  if (formLogout) {
+    formLogout.addEventListener("click", function () {
+      setAdmin("");
+    });
+  }
 
   setAdminUI();
 })();

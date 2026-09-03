@@ -1,25 +1,25 @@
 window.ARNI_CATALOG_SEED = [
   {
     "id": "badge-buddha",
-    "title": "Buddha Badge",
+    "title": "Buddha",
     "category": "badge-pins",
     "src": "assets/catalog/badge-pins/buddha-badge.jpg"
   },
   {
     "id": "keychain-custom-photo",
-    "title": "Custom Photo Keychain",
+    "title": "Custom photo keychain",
     "category": "keychains",
     "src": "assets/catalog/keychains/custom-photo-keychain.jpg"
   },
   {
     "id": "bracelet-img-0268",
-    "title": "Bracelet",
+    "title": "Pearl and peach double-row",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-0268-1787935369714.jpg"
   },
   {
     "id": "earrings-image-from-ios-4-1787935664273-0",
-    "title": "4th of July Earrings",
+    "title": "4th of July earrings",
     "category": "earrings",
     "src": "assets/catalog/earrings/image-from-ios-4-1787935664273.jpg"
   },
@@ -37,211 +37,211 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "bracelets-img-1135-1787949999722-0",
-    "title": "Bracelets 1",
+    "title": "Pearl and blue bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1135-1787949999722.jpg"
   },
   {
     "id": "bracelets-img-1136-1787950002911-1",
-    "title": "Bracelets 2",
+    "title": "Classic pearl",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1136-1787950002911.jpg"
   },
   {
     "id": "bracelets-img-1137-1787950005579-2",
-    "title": "Bracelets 3",
+    "title": "Pastel bead with gold charm",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1137-1787950005579.jpg"
   },
   {
     "id": "bracelets-img-1138-1787950008267-3",
-    "title": "Bracelets 4",
+    "title": "Red and gold flower bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1138-1787950008267.jpg"
   },
   {
     "id": "bracelets-img-1139-1787950011112-4",
-    "title": "Bracelets 5",
+    "title": "Sunset orange bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1139-1787950011112.jpg"
   },
   {
     "id": "bracelets-img-1142-1787950013791-5",
-    "title": "Bracelets 6",
+    "title": "Green seed bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1142-1787950013791.jpg"
   },
   {
     "id": "bracelets-img-1141-1787950016602-6",
-    "title": "Bracelets 7",
+    "title": "Pearl and gold flower",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1141-1787950016602.jpg"
   },
   {
     "id": "bracelets-img-1140-1787950019150-7",
-    "title": "Bracelets 8",
+    "title": "Rainbow seed bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1140-1787950019150.jpg"
   },
   {
     "id": "bracelets-img-1143-1787950021703-8",
-    "title": "Bracelets 9",
+    "title": "Gold bangle with pink flower charm",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1143-1787950021703.jpg"
   },
   {
     "id": "bracelets-img-1144-1787950024669-9",
-    "title": "Bracelets 10",
+    "title": "Gold bangle with star charm",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1144-1787950024669.jpg"
   },
   {
     "id": "bracelets-img-1145-1787950027308-10",
-    "title": "Bracelets 11",
+    "title": "Ocean blue bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1145-1787950027307.jpg"
   },
   {
     "id": "bracelets-img-1148-1787950030364-11",
-    "title": "Bracelets 12",
+    "title": "Gold bangle with teal rose charm",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1148-1787950030364.jpg"
   },
   {
     "id": "bracelets-img-1147-1787950033852-12",
-    "title": "Bracelets 13",
+    "title": "Yellow bead with flower charm",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1147-1787950033852.jpg"
   },
   {
     "id": "bracelets-img-1146-1787950036537-13",
-    "title": "Bracelets 14",
+    "title": "Gold bangle with butterfly charms",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1146-1787950036537.jpg"
   },
   {
     "id": "bracelets-img-1149-1787950039188-14",
-    "title": "Bracelets 15",
+    "title": "Gold bangle with red heart charm",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1149-1787950039188.jpg"
   },
   {
     "id": "bracelets-img-1153-1787950042086-15",
-    "title": "Bracelets 16",
+    "title": "Gold charm bangle",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1153-1787950042086.jpg"
   },
   {
     "id": "bracelets-img-1151-1787950044626-16",
-    "title": "Bracelets 17",
+    "title": "Gold bangle with rose charm",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1151-1787950044626.jpg"
   },
   {
     "id": "bracelets-img-1150-1787950047571-17",
-    "title": "Bracelets 18",
+    "title": "Pastel rainbow bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1150-1787950047571.jpg"
   },
   {
     "id": "bracelets-img-1156-1787950050166-18",
-    "title": "Bracelets 19",
+    "title": "Coral and peach bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1156-1787950050166.jpg"
   },
   {
     "id": "bracelets-img-1155-1787950052847-19",
-    "title": "Bracelets 20",
+    "title": "Natural wood bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1155-1787950052847.jpg"
   },
   {
     "id": "bracelets-img-1154-1787950055392-20",
-    "title": "Bracelets 21",
+    "title": "Confetti bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1154-1787950055392.jpg"
   },
   {
     "id": "bracelets-img-1157-1787950059168-21",
-    "title": "Bracelets 22",
+    "title": "Peach seed bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1157-1787950059168.jpg"
   },
   {
     "id": "bracelets-img-1158-1787950061932-22",
-    "title": "Bracelets 23",
+    "title": "Rainbow bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1158-1787950061932.jpg"
   },
   {
     "id": "bracelets-img-1159-1787950064590-23",
-    "title": "Bracelets 24",
+    "title": "Emerald green bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1159-1787950064590.jpg"
   },
   {
     "id": "bracelets-img-1160-1787950067065-24",
-    "title": "Bracelets 25",
+    "title": "Lemon and cream bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1160-1787950067065.jpg"
   },
   {
     "id": "bracelets-img-1161-1787950070086-25",
-    "title": "Bracelets 26",
+    "title": "Sunset pastel bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1161-1787950070086.jpg"
   },
   {
     "id": "bracelets-img-1164-1787950072662-26",
-    "title": "Bracelets 27",
+    "title": "Daisy flower",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1164-1787950072662.jpg"
   },
   {
     "id": "bracelets-img-1163-1787950075351-27",
-    "title": "Bracelets 28",
+    "title": "Pink blossom bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1163-1787950075351.jpg"
   },
   {
     "id": "bracelets-img-1162-1787950077984-28",
-    "title": "Bracelets 29",
+    "title": "Spring garden bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1162-1787950077984.jpg"
   },
   {
     "id": "bracelets-img-1166-1787950080586-29",
-    "title": "Bracelets 30",
+    "title": "Blue and white seed bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1166-1787950080586.jpg"
   },
   {
     "id": "bracelets-img-1167-1787950083257-30",
-    "title": "Bracelets 31",
+    "title": "Pearl and red bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1167-1787950083257.jpg"
   },
   {
     "id": "bracelets-img-1168-1787950085979-31",
-    "title": "Bracelets 32",
+    "title": "Aqua bead with shell charm",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1168-1787950085979.jpg"
   },
   {
     "id": "bracelets-img-1171-1787950088546-32",
-    "title": "Bracelets 33",
+    "title": "Pearl and gold bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1171-1787950088546.jpg"
   },
   {
     "id": "bracelets-img-1170-1787950091215-33",
-    "title": "Bracelets 34",
+    "title": "Navy and white bead",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1170-1787950091215.jpg"
   },
   {
     "id": "bracelets-img-1169-1787950093818-34",
-    "title": "Bracelets 35",
+    "title": "Petite pearl",
     "category": "bracelets",
     "src": "assets/catalog/bracelets/img-1169-1787950093818.jpg"
   },
@@ -283,13 +283,13 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "keychains-img-1339-1788181995987-0",
-    "title": "Panda 1",
+    "title": "Panda",
     "category": "keychains",
     "src": "assets/catalog/keychains/img-1339-1788181995987.jpg"
   },
   {
     "id": "keychains-img-1341-1788183800564-0",
-    "title": "Smile, face",
+    "title": "Smiley face",
     "category": "keychains",
     "src": "assets/catalog/keychains/img-1341-1788183800564.jpg"
   },
@@ -301,7 +301,7 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "keychains-img-1337-1788184105312-0",
-    "title": "Hello kitty",
+    "title": "Hello Kitty",
     "category": "keychains",
     "src": "assets/catalog/keychains/img-1337-1788184105312.jpg"
   },
@@ -313,7 +313,7 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "keychains-img-1314-1788184275716-0",
-    "title": "Forever, my always my Mom",
+    "title": "Forever my always, Mom",
     "category": "keychains",
     "src": "assets/catalog/keychains/img-1314-1788184275716.jpg"
   },
@@ -349,7 +349,7 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "keychains-img-1331-1788185045314-0",
-    "title": "Bee kind bee Happy",
+    "title": "Bee kind, bee happy",
     "category": "keychains",
     "src": "assets/catalog/keychains/img-1331-1788185045314.jpg"
   },
@@ -385,14 +385,14 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "happy-birthday-img-1305-1788225377420-0",
-    "title": "spaceship",
+    "title": "Spaceship",
     "category": "happy-birthday",
     "src": "assets/catalog/happy-birthday/img-1305-1788225377419.jpg",
     "productType": "pin"
   },
   {
     "id": "happy-birthday-img-1301-1788266366467-0",
-    "title": "Cake",
+    "title": "Cake and balloons",
     "category": "happy-birthday",
     "src": "assets/catalog/happy-birthday/img-1301-1788266366467.jpg",
     "productType": "pin"
@@ -406,21 +406,21 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "happy-birthday-img-1304-1788266588197-0",
-    "title": "Unicorn 1",
+    "title": "Rainbow unicorn",
     "category": "happy-birthday",
     "src": "assets/catalog/happy-birthday/img-1304-1788266588197.jpg",
     "productType": "pin"
   },
   {
     "id": "happy-birthday-img-1298-1788266591319-1",
-    "title": "Unicorn 2",
+    "title": "Sparkle unicorn",
     "category": "happy-birthday",
     "src": "assets/catalog/happy-birthday/img-1298-1788266591319.jpg",
     "productType": "pin"
   },
   {
     "id": "happy-birthday-img-1293-1788266682337-0",
-    "title": "Cake",
+    "title": "Cake and confetti",
     "category": "happy-birthday",
     "src": "assets/catalog/happy-birthday/img-1293-1788266682337.jpg",
     "productType": "pin"
@@ -434,7 +434,7 @@ window.ARNI_CATALOG_SEED = [
   },
   {
     "id": "hindu-god-img-1385-1788267850456-0",
-    "title": "Saibaba",
+    "title": "Sai Baba",
     "category": "hindu-god",
     "src": "assets/catalog/hindu-god/img-1385-1788267850456.jpg",
     "productType": "magnet"
