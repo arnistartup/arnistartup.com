@@ -9,8 +9,7 @@
     { id: "badge-pins", name: "Badge pins", price: 2 },
     { id: "magnets", name: "Magnets", price: 3 },
     { id: "keychains", name: "Keychains", price: 4 },
-    { id: "earrings", name: "Earrings", price: 3 },
-    { id: "bracelets", name: "Bracelets", price: 5 }
+    { id: "bracelets", name: "Bracelets", price: 5, customOrder: false }
   ];
   var THEMES = [
     { id: "hindu-god", name: "Hindu God", filterLabel: "Hindu Gods" },
@@ -22,6 +21,32 @@
   document.addEventListener("contextmenu", function (event) {
     event.preventDefault();
   });
+
+  var THEME_KEY = "arni-theme";
+
+  function applyTheme(theme) {
+    var dark = theme === "dark";
+    document.documentElement.setAttribute("data-theme", dark ? "dark" : "light");
+    var btn = document.getElementById("themeToggle");
+    if (!btn) return;
+    btn.setAttribute("aria-pressed", dark ? "true" : "false");
+    btn.setAttribute("aria-label", dark ? "Switch to light mode" : "Switch to dark mode");
+    var icon = btn.querySelector("[data-theme-icon]");
+    if (icon) icon.textContent = dark ? "☀️" : "🌙";
+  }
+
+  applyTheme(document.documentElement.getAttribute("data-theme"));
+
+  var themeToggle = document.getElementById("themeToggle");
+  if (themeToggle) {
+    themeToggle.addEventListener("click", function () {
+      var next = document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark";
+      try {
+        localStorage.setItem(THEME_KEY, next);
+      } catch (err) {}
+      applyTheme(next);
+    });
+  }
 
   if (typeof emailjs !== "undefined" && emailjs.init) {
     emailjs.init("EIgc0sAV8OCMV5mPL");

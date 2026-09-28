@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="assets/js/theme-init.js"></script>
 <title>Shipping, returns &amp; privacy — Arni Startup</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
@@ -17,13 +18,18 @@
     <li><a href="index.html#catalog">Catalog</a></li>
     <li><a href="index.html#reviews">Reviews</a></li>
   </ul>
-  <a href="index.html#order" class="btn-primary nav-order-button">Order now</a>
+  <div class="nav-actions">
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Switch to dark mode">
+      <span data-theme-icon aria-hidden="true">🌙</span>
+    </button>
+    <a href="index.html#order" class="btn-primary nav-order-button">Order now</a>
+  </div>
 </nav>
 
 <main class="page">
   <span class="section-label">The small print, simply</span>
   <h1>Shipping, returns &amp; privacy</h1>
-  <p class="lead">Arni Startup is a handmade shop run by two kids, Arjun and Niya, with help from their family. Here is how shipping, returns, photos, and their names work.</p>
+  <p class="lead">Arni Startup is a handmade shop run by two kids, Arjun and Niya, with help from their family. Here is how shipping, care, returns, photos, and their names work.</p>
 
   <article class="policy" id="shipping">
     <h2>Shipping &amp; making time 📦</h2>
@@ -34,6 +40,12 @@
   <article class="policy" id="photos">
     <h2>Product photos 📷</h2>
     <p>The pictures in our catalog are photos we uploaded of real handmade pieces. Colors, shine, and small details can look a little different in person because of lighting, screens, and the fact that each item is made by hand.</p>
+  </article>
+
+  <article class="policy" id="care">
+    <h2>Caring for your piece 🧼</h2>
+    <p>Every item is handmade, so please use it gently. Avoid pulling, bending, or dropping it.</p>
+    <p><strong>Never expose it to water</strong> — take it off before washing hands, bathing, swimming, or going out in the rain, and keep it dry.</p>
   </article>
 
   <article class="policy" id="returns">

@@ -145,7 +145,9 @@
     var title = item.title || "Catalog item";
     lightboxImage.src = item.src;
     lightboxImage.alt = title;
-    if (lightboxCaption) lightboxCaption.textContent = title;
+    if (lightboxCaption) {
+      lightboxCaption.textContent = item.soldOut ? title + " · Sold out" : title;
+    }
     lightbox.hidden = false;
     document.body.classList.add("lightbox-open");
     resetZoom();
@@ -338,6 +340,9 @@
     var items = seedItems.filter(function (item) {
       return activeFilter === "all" || item.category === activeFilter;
     });
+    items.sort(function (a, b) {
+      return (a.soldOut === true) - (b.soldOut === true);
+    });
 
     grid.innerHTML = "";
 
@@ -353,6 +358,7 @@
     empty.hidden = true;
 
     items.forEach(function (item) {
+      var soldOut = item.soldOut === true;
       var card = document.createElement("article");
       card.className = "catalog-card";
       card.setAttribute("data-category", item.category);
@@ -375,6 +381,13 @@
 
       media.appendChild(img);
 
+      if (soldOut) {
+        var sold = document.createElement("span");
+        sold.className = "catalog-sold-out";
+        sold.textContent = "Sold out";
+        media.appendChild(sold);
+      }
+
       var meta = document.createElement("div");
       meta.className = "catalog-card-meta";
 
@@ -385,22 +398,29 @@
       badge.className = "catalog-card-badge";
       badge.textContent = Site ? Site.labelForItem(item) : item.category || "";
 
-      var addBtn = document.createElement("button");
-      addBtn.type = "button";
-      addBtn.className = "catalog-cart-btn";
-      addBtn.setAttribute(
-        "aria-label",
-        "Add " + (item.title || "item") + " to cart"
-      );
-      addBtn.textContent = "+ Add";
-      addBtn.addEventListener("click", function () {
-        if (window.ArniCart && typeof window.ArniCart.addItem === "function") {
-          window.ArniCart.addItem(item);
-        }
-      });
-
       topRow.appendChild(badge);
-      topRow.appendChild(addBtn);
+
+      if (soldOut) {
+        var soldLabel = document.createElement("span");
+        soldLabel.className = "catalog-sold-out-label";
+        soldLabel.textContent = "Sold out";
+        topRow.appendChild(soldLabel);
+      } else {
+        var addBtn = document.createElement("button");
+        addBtn.type = "button";
+        addBtn.className = "catalog-cart-btn";
+        addBtn.setAttribute(
+          "aria-label",
+          "Add " + (item.title || "item") + " to cart"
+        );
+        addBtn.textContent = "+ Add";
+        addBtn.addEventListener("click", function () {
+          if (window.ArniCart && typeof window.ArniCart.addItem === "function") {
+            window.ArniCart.addItem(item);
+          }
+        });
+        topRow.appendChild(addBtn);
+      }
 
       var title = document.createElement("h3");
       title.className = "catalog-card-title";

@@ -80,7 +80,9 @@
 
   function renderProductOptions() {
     var root = document.querySelector(".product-options");
-    var products = Site.PRODUCTS;
+    var products = Site.PRODUCTS.filter(function (product) {
+      return product.customOrder !== false;
+    });
     if (!root || !products) return;
     root.innerHTML = "";
     products.forEach(function (product) {

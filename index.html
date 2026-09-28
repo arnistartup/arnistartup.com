@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="assets/js/theme-init.js"></script>
 <title>Arni Startup — Handmade with Heart</title>
 <link rel="icon" type="image/svg+xml" href="assets/favicon.svg">
 <link rel="apple-touch-icon" href="assets/favicon.svg">
@@ -21,6 +22,9 @@
     <li><a href="#reviews">Reviews</a></li>
   </ul>
   <div class="nav-actions">
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Switch to dark mode">
+      <span data-theme-icon aria-hidden="true">🌙</span>
+    </button>
     <button type="button" class="nav-cart-btn" id="cartOpenBtn" aria-label="Open cart" aria-controls="cartDrawer" aria-expanded="false">
       <span aria-hidden="true">🛒</span>
       <span class="nav-cart-count" id="cartCount" hidden>0</span>
@@ -39,7 +43,7 @@
 
   <span class="hero-badge">🎨 Building Our First Business</span>
   <h1>Handmade<br>with Heart</h1>
-  <p>We're Arjun &amp; Niya — two young creators making colourful badge pins, magnets, bracelets, and earrings, one piece at a time. Every item is crafted by hand, with love.</p>
+  <p>We're Arjun &amp; Niya — two young creators making colourful badge pins, magnets, and bracelets one piece at a time.</p>
   <div class="hero-btns">
     <a href="#catalog" class="btn-secondary">🛍️ Shop Our Collection</a>
     <a href="#order" class="btn-primary">🎁 Custom Orders</a>
@@ -72,7 +76,7 @@
       </div>
       <div class="founder-name">Niya</div>
       <div class="founder-role" data-birth-year="2018" data-birth-month="10">Co-Founder · Age 7</div>
-      <p class="founder-bio">Niya is the jewelry queen of Arni Startup! She handcrafts every bracelet and pair of earrings with care and patience. She believes every piece should make the person wearing it feel extra special and beautiful.</p>
+      <p class="founder-bio">Niya is the jewelry queen of Arni Startup! She handcrafts every bracelet with care and patience. She believes every piece should make the person wearing it feel extra special and beautiful.</p>
     </div>
   </div>
 </section>
@@ -82,7 +86,7 @@
   <div class="catalog-inner">
     <span class="section-label">Browse our work</span>
     <h2 class="section-title">Catalog ✨</h2>
-    <p class="catalog-intro">Browse everything, or filter by badge pins, magnets, keychains, bracelets, earrings, Hindu God, and Happy Birthday. Tap + Add on an item, then open the cart icon to place the order. Photos are of real pieces we uploaded; colors and details may look a little different in person because of lighting.</p>
+    <p class="catalog-intro">Browse everything, or filter by badge pins, magnets, keychains, bracelets, Hindu God, and Happy Birthday. Tap + Add on an item, then open the cart icon to place the order. Photos are of real pieces we uploaded; colors and details may look a little different in person because of lighting.</p>
 
     <div class="catalog-filters" id="catalogFilters" role="tablist" aria-label="Catalog categories"></div>
     <div class="catalog-grid" id="catalogGrid"></div>

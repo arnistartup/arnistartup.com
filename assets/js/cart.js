@@ -118,6 +118,7 @@
   }
 
   function addItem(item) {
+    if (item.soldOut) return;
     var existing = cart.find(function (entry) {
       return entry.id === item.id;
     });
