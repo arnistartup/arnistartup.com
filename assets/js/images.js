@@ -44,10 +44,15 @@
         mime === "image/jpeg"
           ? canvas.toDataURL(mime, quality)
           : canvas.toDataURL(mime);
+      var webpQuality = quality == null ? 0.85 : quality;
+      var webp = canvas.toDataURL("image/webp", webpQuality);
+      var webpBase64 =
+        webp.indexOf("data:image/webp") === 0 ? webp.split(",")[1] : "";
       return {
         dataUrl: out,
         base64: out.split(",")[1],
-        ext: mime === "image/png" ? ".png" : ".jpg"
+        ext: mime === "image/png" ? ".png" : ".jpg",
+        webpBase64: webpBase64
       };
     },
 

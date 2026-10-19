@@ -373,6 +373,11 @@
     try {
       var imagePath = "";
       if (item.base64) {
+        if (!item.webpBase64) {
+          throw new Error(
+            "Could not create a WebP photo. Use Chrome or Safari, then publish again."
+          );
+        }
         var filename =
           "review-" +
           Date.now() +
@@ -380,12 +385,32 @@
           (Site ? Site.slugify(item.name) : "customer") +
           (item.ext || ".jpg");
         imagePath = "assets/reviews/" + filename;
+        var webpPath = localReviewWebpPath(imagePath);
         await Gh.putFile(
           githubToken,
           imagePath,
           item.base64,
           "Publish review photo: " + filename
         );
+        try {
+          await Gh.putFile(
+            githubToken,
+            webpPath,
+            item.webpBase64,
+            "Publish review photo: " + webpPath.split("/").pop()
+          );
+        } catch (webpErr) {
+          try {
+            await Gh.deleteFile(
+              githubToken,
+              imagePath,
+              "Remove review photo after WebP upload failed"
+            );
+          } catch (cleanupErr) {
+            console.warn(cleanupErr);
+          }
+          throw webpErr;
+        }
       } else if (item.src && isRemotePhotoUrl(item.src)) {
         imagePath = item.src;
       } else {
@@ -512,8 +537,16 @@
               mime: "image/jpeg",
               quality: 0.85
             });
+            if (!compressedAdmin.webpBase64) {
+              setStatus(
+                "Could not create a WebP photo. Use Chrome or Safari, then publish again.",
+                "error"
+              );
+              return;
+            }
             payload.base64 = compressedAdmin.base64;
             payload.ext = compressedAdmin.ext;
+            payload.webpBase64 = compressedAdmin.webpBase64;
           } else {
             payload.src = imageUrl;
           }
