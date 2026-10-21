@@ -1,0 +1,692 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="../assets/js/theme-init.js"></script>
+<title>Turn photos into badges — Arni Startup</title>
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="apple-touch-icon" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../assets/css/site.css">
+<style>
+  .maker{
+    --card:var(--surface);
+    --ink:var(--text);
+    --ink-soft:var(--muted);
+    --line:var(--border);
+    --brand:var(--purple);
+    --amber:var(--yellow);
+    --coral:#E0556B;
+    --shadow:0 1px 2px rgba(46,36,81,.06), 0 10px 28px rgba(46,36,81,.10);
+    --radius:16px;
+  }
+
+  /* Toolbar */
+  .toolbar{
+    margin-top:22px;display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;box-shadow:var(--shadow);
+  }
+  .maker .btn{
+    font-family:"Nunito",sans-serif;font-weight:800;font-size:15px;
+    border:none;border-radius:11px;padding:11px 16px;cursor:pointer;
+    display:inline-flex;align-items:center;gap:8px;transition:transform .06s ease, filter .15s ease;
+  }
+  .maker .btn:active{transform:translateY(1px)}
+  .maker .btn-primary{background:var(--brand);color:var(--on-accent)}
+  .maker .btn-primary:hover{filter:brightness(1.12)}
+  .maker .btn-ghost{background:transparent;color:var(--ink);border:1.5px solid var(--line)}
+  .maker .btn-ghost:hover{border-color:var(--ink);background:var(--tint)}
+  .maker .btn:disabled{opacity:.4;cursor:not-allowed}
+  .maker .btn svg{width:18px;height:18px}
+  .spacer{flex:1}
+  .count{
+    font-family:"Space Mono",monospace;font-weight:700;font-size:13px;
+    color:var(--ink);background:var(--surface);border:1.5px solid var(--line);
+    padding:8px 12px;border-radius:10px;white-space:nowrap;
+  }
+  .count b{color:var(--amber)}
+  .bleed-toggle{
+    display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:13.5px;
+    color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;
+    padding:7px 12px 7px 11px;cursor:pointer;user-select:none;
+  }
+  .size-pick{
+    display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:13.5px;
+    color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:10px;
+    padding:6px 10px;cursor:pointer;user-select:none;
+  }
+  .size-pick select{
+    font-family:"Nunito",sans-serif;font-weight:800;font-size:13.5px;color:var(--ink);
+    border:none;background:var(--tint);border-radius:7px;padding:5px 8px;cursor:pointer;outline:none;
+  }
+  .bleed-toggle input{display:none}
+  .switch{width:34px;height:20px;border-radius:20px;background:var(--line);position:relative;transition:background .15s}
+  .switch::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:transform .15s;box-shadow:0 1px 2px rgba(0,0,0,.2)}
+  .bleed-toggle input:checked + .switch{background:var(--amber)}
+  .bleed-toggle input:checked + .switch::after{transform:translateX(14px)}
+
+  /* The sheet */
+  .sheet-label{display:flex;align-items:center;gap:10px;margin:26px 2px 12px}
+  .sheet-label h2{font-family:"Fredoka One",cursive;font-weight:400;font-size:17px;margin:0}
+  .sheet-label .hint{font-size:13px;color:var(--ink-soft);font-weight:600}
+  .grid{
+    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+  }
+  @media(max-width:720px){ .grid{grid-template-columns:repeat(2,1fr)} }
+  @media(max-width:440px){ .grid{grid-template-columns:1fr} }
+
+  .slot{
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+    padding:14px;box-shadow:var(--shadow);position:relative;
+    display:flex;flex-direction:column;align-items:center;
+  }
+  .slot .tag{
+    position:absolute;top:10px;left:12px;font-family:"Space Mono",monospace;
+    font-size:11px;font-weight:700;color:var(--ink-soft);letter-spacing:.5px;
+  }
+
+  /* Empty slot */
+  .empty{cursor:pointer;border-style:dashed;border-color:var(--line);background:var(--surface);transition:border-color .15s, background .15s}
+  .empty:hover{border-color:var(--brand);background:var(--tint)}
+  .empty .drop{
+    width:100%;aspect-ratio:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;
+    color:var(--ink-soft);
+  }
+  .empty .plus{
+    width:44px;height:44px;border-radius:50%;background:var(--amber);border:2.5px solid var(--ink);
+    display:grid;place-items:center;color:var(--ink);
+  }
+  .empty .plus svg{width:22px;height:22px}
+  .empty .drop span{font-weight:800;font-size:14px;color:var(--ink)}
+  .empty .drop small{font-size:12px}
+
+  /* Filled slot */
+  .stage{
+    width:100%;aspect-ratio:1;position:relative;touch-action:none;cursor:grab;
+    border-radius:50%;
+  }
+  .stage.dragging{cursor:grabbing}
+  .stage canvas{display:block;width:100%;height:100%;border-radius:50%}
+  .ring{
+    position:absolute;inset:0;border-radius:50%;pointer-events:none;
+    box-shadow:0 0 0 3px var(--ink), 0 0 0 4px rgba(255,255,255,.5), inset 0 4px 12px rgba(0,0,0,.12);
+  }
+  .safe{
+    position:absolute;border:1.5px dashed rgba(255,255,255,.9);border-radius:50%;pointer-events:none;
+    filter:drop-shadow(0 0 1px rgba(0,0,0,.45));
+  }
+  .badge-name{
+    margin-top:24px;width:100%;text-align:center;font-family:"Fredoka One",cursive;
+    font-weight:400;font-size:14px;color:var(--ink);
+    border:none;background:transparent;padding:2px;border-radius:6px;
+  }
+  .badge-name:focus{outline:2px solid var(--amber);background:var(--surface)}
+
+  /* Tools row */
+  .tools{width:100%;margin-top:10px;display:flex;flex-direction:column;gap:10px}
+  .zoomrow{display:flex;align-items:center;gap:8px}
+  .icon-btn{
+    width:34px;height:34px;flex:none;border-radius:9px;border:1.5px solid var(--line);
+    background:var(--surface);color:var(--ink);cursor:pointer;display:grid;place-items:center;
+  }
+  .icon-btn:hover{border-color:var(--ink)}
+  .icon-btn svg{width:17px;height:17px}
+  .maker input[type=range]{
+    -webkit-appearance:none;appearance:none;flex:1;height:6px;border-radius:6px;
+    background:var(--line);outline:none;
+  }
+  .maker input[type=range]::-webkit-slider-thumb{
+    -webkit-appearance:none;width:18px;height:18px;border-radius:50%;
+    background:var(--amber);border:2.5px solid var(--ink);cursor:pointer;
+  }
+  .maker input[type=range]::-moz-range-thumb{
+    width:18px;height:18px;border-radius:50%;background:var(--amber);
+    border:2.5px solid var(--ink);cursor:pointer;
+  }
+  .minirow{display:flex;gap:8px}
+  .mini{
+    flex:1;font-weight:700;font-size:12.5px;border:1.5px solid var(--line);background:var(--surface);
+    color:var(--ink);border-radius:9px;padding:7px 4px;cursor:pointer;display:inline-flex;
+    align-items:center;justify-content:center;gap:5px;
+  }
+  .mini:hover{border-color:var(--ink)}
+  .mini.danger{color:var(--coral)}
+  .mini.danger:hover{border-color:var(--coral);background:var(--tint)}
+  .mini svg{width:14px;height:14px}
+
+  .tips{margin-top:34px;color:var(--ink-soft);font-size:13.5px;line-height:1.6;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);padding:16px 18px}
+  .tips h3{font-family:"Fredoka One",cursive;font-weight:400;font-size:15px;margin:0 0 8px;color:var(--ink)}
+  .tips b{color:var(--ink)}
+  .tips p{margin:0 0 8px}
+  .tips .note{margin:8px 0 0;font-size:12.5px}
+</style>
+</head>
+<body>
+<nav>
+  <a class="nav-logo" href="../index.html">Arni<span>★</span></a>
+  <ul class="nav-links">
+    <li><a href="../index.html#about">About us</a></li>
+    <li><a href="../index.html#catalog">Catalog</a></li>
+    <li><a href="../index.html#reviews">Reviews</a></li>
+  </ul>
+  <div class="nav-actions">
+    <button type="button" class="theme-toggle" id="themeToggle" aria-pressed="false" aria-label="Switch to dark mode">
+      <span data-theme-icon aria-hidden="true">🌙</span>
+    </button>
+    <button type="button" class="nav-cart-btn" id="cartOpenBtn" aria-label="Open cart" aria-controls="cartDrawer" aria-expanded="false">
+      <span aria-hidden="true">🛒</span>
+      <span class="nav-cart-count" id="cartCount" hidden>0</span>
+    </button>
+    <a href="../index.html#order" class="btn-primary nav-order-button">Order now</a>
+  </div>
+</nav>
+
+<section class="catalog-section">
+  <div class="catalog-inner maker">
+    <span class="section-label">Ready to print</span>
+    <h1 class="section-title">Turn photos into badges ✨</h1>
+    <p class="catalog-intro">Fit each picture in a true-size 62&nbsp;mm circle, then print up to 9 on a sheet for the press.</p>
+
+    <div class="toolbar">
+      <button class="btn btn-primary" id="addBtn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+        Add photos
+      </button>
+      <label class="size-pick" title="Match this to your button press.">
+        Badge size
+        <select id="sizeSel">
+          <option value="58">58 mm</option>
+          <option value="62" selected>62 mm</option>
+          <option value="75">75 mm</option>
+        </select>
+      </label>
+      <label class="bleed-toggle" title="Adds a 3 mm print border that folds around the back of the badge. Turn on for most badge presses.">
+        <input type="checkbox" id="bleedChk">
+        <span class="switch"></span>
+        Print border (bleed)
+      </label>
+      <div class="spacer"></div>
+      <span class="count"><b id="used">0</b> / 9 badges</span>
+      <button class="btn btn-ghost" id="printBtn" disabled>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg>
+        Print sheet
+      </button>
+    </div>
+
+    <div class="sheet-label">
+      <h2>Your sheet</h2>
+      <span class="hint">Drag a photo to move it • pinch or scroll to zoom</span>
+    </div>
+
+    <div class="grid" id="grid"></div>
+
+    <div class="tips">
+      <h3>How to use it</h3>
+      <p><b>1. Add photos.</b> Tap <b>Add photos</b> or any empty circle. On a phone this lets the customer take a new photo or pick one from their gallery.</p>
+      <p><b>2. Fit the picture.</b> Drag inside the circle to move it, and use the zoom slider (or pinch / mouse scroll) so the important part sits inside the badge. Rotate if the photo is sideways.</p>
+      <p><b>3. Print.</b> Pick your <b>Badge size</b> at the top, then click <b>Print sheet</b> to print every badge at true size, ready for the press.</p>
+      <p class="note">The dashed circle is the <b>safe area</b> — keep faces and text inside it. Everything wraps at true size for a <b>300&nbsp;DPI</b> print. Your photos never leave this page.</p>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <picture>
+    <source type="image/webp" srcset="../assets/people/footer-photo.webp">
+    <img class="footer-photo" src="../assets/people/footer-photo.jpg" alt="Arjun and Niya, founders of Arni Startup" width="300" height="300" loading="lazy" decoding="async">
+  </picture>
+  <div class="footer-logo">Arni★</div>
+  <div class="footer-hearts">💜 💛 🩷</div>
+  <p>Created by <strong>Arjun</strong> &amp; <strong>Niya</strong> — two young entrepreneurs turning creativity into a little business.</p>
+  <p class="footer-contact">Questions or orders? Reach us at <a data-shop-email></a></p>
+  <p class="footer-links">
+    <a href="../policies.html#shipping">Shipping</a>
+    <a href="../policies.html#returns">Returns</a>
+    <a href="../policies.html#privacy">Privacy</a>
+  </p>
+  <p class="footer-copyright">© 2026 Arni Startup · All items handmade with ❤️</p>
+</footer>
+
+<div class="cart-backdrop" id="cartBackdrop" hidden></div>
+<aside class="cart-drawer" id="cartDrawer" hidden role="dialog" aria-modal="true" aria-labelledby="cartTitle">
+  <div class="cart-drawer-header">
+    <h2 id="cartTitle">Your cart</h2>
+    <button type="button" class="cart-close" id="cartCloseBtn" aria-label="Collapse cart" title="Collapse cart">
+      <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M9 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M5 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" opacity="0.45"/>
+      </svg>
+    </button>
+  </div>
+  <p class="cart-empty" id="cartEmpty">Your cart is empty. Add items from the <a href="../index.html#catalog">Catalog</a>.</p>
+  <div class="cart-items" id="cartItems"></div>
+  <div class="cart-summary" id="cartSummary" hidden>
+    <label class="cart-shipping" for="cartShipping">
+      <input type="checkbox" id="cartShipping">
+      <span>Ship to me for <span data-shipping-cost></span> · Free local pickup</span>
+    </label>
+    <div class="cart-totals">
+      <div><span>Subtotal</span><strong id="cartSubtotal">$0.00</strong></div>
+      <div><span>Shipping</span><strong id="cartShippingCost">$0.00</strong></div>
+      <div class="cart-total-row"><span>Total</span><strong id="cartTotal">$0.00</strong></div>
+    </div>
+    <div class="cart-checkout-fields">
+      <label for="cartName">
+        <span>Your name *</span>
+        <input type="text" id="cartName" placeholder="e.g. Niya Vardha" autocomplete="name">
+      </label>
+      <label for="cartEmail">
+        <span>Your email *</span>
+        <input type="email" id="cartEmail" placeholder="you@email.com" autocomplete="email">
+      </label>
+      <label for="cartNotes">
+        <span>Notes</span>
+        <textarea id="cartNotes" placeholder="Color preference, gift note, etc."></textarea>
+      </label>
+      <input class="honeypot" type="text" id="cartWebsite" name="cart-website" tabindex="-1" autocomplete="off" aria-hidden="true">
+    </div>
+    <button type="button" class="btn-primary cart-place-btn" id="cartPlaceOrder">Place order</button>
+    <p class="cart-status" id="cartStatus" hidden></p>
+  </div>
+</aside>
+
+<input type="file" id="fileInput" accept="image/*" multiple hidden>
+
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
+<script src="../assets/js/site.js"></script>
+<script src="../assets/js/cart.js"></script>
+<script>
+(function(){
+  "use strict";
+
+  const SLOTS = 9;
+  let faceMM = 62;             // visible badge face (changeable via the size picker)
+  const BLEED_MM = 3;          // wrap-around border each side when bleed on
+  const SITE = "https://arnistartup.com/"; // curved around the badge edge
+  const DPI = 300;
+  const mmToPx = mm => Math.round(mm/25.4*DPI);
+
+  // state: array of 9 (null or badge object)
+  const state = new Array(SLOTS).fill(null);
+  let bleed = false;
+  let addTargetIndex = null; // if adding into a specific empty slot
+  let uid = 0;               // unique ids for curved-text paths
+
+  const grid = document.getElementById('grid');
+  const fileInput = document.getElementById('fileInput');
+  const usedEl = document.getElementById('used');
+  const printBtn = document.getElementById('printBtn');
+  const bleedChk = document.getElementById('bleedChk');
+  const sizeSel = document.getElementById('sizeSel');
+  const subEl = document.querySelector('.catalog-intro');
+
+  function workingMM(){ return bleed ? (faceMM + BLEED_MM*2) : faceMM; }
+
+  // ---------- rendering a badge onto a canvas ----------
+  // badge: {img, scale(1..4), ox, oy (fraction of diameter), rot(deg)}
+  function drawBadge(ctx, size, b, opts){
+    opts = opts || {};
+    ctx.clearRect(0,0,size,size);
+    const cx = size/2, cy = size/2, r = size/2;
+
+    ctx.save();
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI*2);
+    ctx.closePath();
+    ctx.clip();
+
+    // white base so transparency / edges look clean
+    ctx.fillStyle = "#ffffff";
+    ctx.fillRect(0,0,size,size);
+
+    const iw = b.img.naturalWidth, ih = b.img.naturalHeight;
+    const cover = Math.max(size/iw, size/ih);
+    const s = cover * b.scale;
+    ctx.translate(cx + b.ox*size, cy + b.oy*size);
+    ctx.rotate(b.rot * Math.PI/180);
+    ctx.drawImage(b.img, -iw*s/2, -ih*s/2, iw*s, ih*s);
+    ctx.restore();
+
+    // guide circles (used for print / export)
+    if(opts.guides){
+      const strokeW = Math.max(1, size*0.004);
+      // cut line at very edge
+      ctx.save();
+      ctx.lineWidth = strokeW;
+      ctx.strokeStyle = "rgba(0,0,0,.55)";
+      ctx.beginPath(); ctx.arc(cx,cy, r - strokeW/2, 0, Math.PI*2); ctx.stroke();
+      // safe / face line
+      const faceR = r * (faceMM / workingMM());
+      ctx.setLineDash([size*0.02, size*0.02]);
+      ctx.lineWidth = strokeW*0.8;
+      ctx.strokeStyle = "rgba(0,0,0,.30)";
+      ctx.beginPath(); ctx.arc(cx,cy, faceR, 0, Math.PI*2); ctx.stroke();
+      ctx.restore();
+    }
+  }
+
+  // clamp offsets so no white gap appears inside the circle
+  function clampOffsets(b, size){
+    const iw = b.img.naturalWidth, ih = b.img.naturalHeight;
+    const cover = Math.max(size/iw, size/ih);
+    const s = cover * b.scale;
+    let dw = iw*s, dh = ih*s;
+    // account for rotation with a bounding box
+    const a = Math.abs(b.rot % 360) * Math.PI/180;
+    const rw = Math.abs(dw*Math.cos(a)) + Math.abs(dh*Math.sin(a));
+    const rh = Math.abs(dw*Math.sin(a)) + Math.abs(dh*Math.cos(a));
+    const maxX = Math.max(0, (rw - size)/2)/size;
+    const maxY = Math.max(0, (rh - size)/2)/size;
+    b.ox = Math.max(-maxX, Math.min(maxX, b.ox));
+    b.oy = Math.max(-maxY, Math.min(maxY, b.oy));
+  }
+
+  // ---------- build the 9 slots ----------
+  function render(){
+    grid.innerHTML = "";
+    let used = 0;
+    for(let i=0;i<SLOTS;i++){
+      const b = state[i];
+      if(b) used++;
+      grid.appendChild(b ? filledSlot(i,b) : emptySlot(i));
+    }
+    usedEl.textContent = used;
+    printBtn.disabled = used === 0;
+  }
+
+  function emptySlot(i){
+    const el = document.createElement('div');
+    el.className = 'slot empty';
+    el.innerHTML = `
+      <span class="tag">${String(i+1).padStart(2,'0')}</span>
+      <div class="drop">
+        <div class="plus"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></div>
+        <span>Add photo</span>
+        <small>tap, or drop an image here</small>
+      </div>`;
+    el.addEventListener('click', ()=>{ addTargetIndex = i; fileInput.click(); });
+    // drag & drop
+    el.addEventListener('dragover', e=>{ e.preventDefault(); el.style.background="#FAF7FF"; });
+    el.addEventListener('dragleave', ()=>{ el.style.background=""; });
+    el.addEventListener('drop', e=>{
+      e.preventDefault(); el.style.background="";
+      const files = [...(e.dataTransfer?.files||[])].filter(f=>f.type.startsWith('image/'));
+      if(files.length){ addTargetIndex = i; loadFiles(files); }
+    });
+    return el;
+  }
+
+  function filledSlot(i,b){
+    const el = document.createElement('div');
+    el.className='slot';
+    el.innerHTML = `
+      <span class="tag">${String(i+1).padStart(2,'0')}</span>
+      <div class="stage" data-i="${i}">
+        <canvas></canvas>
+        <div class="ring"></div>
+        <div class="safe"></div>
+      </div>
+      <input class="badge-name" value="${b.name.replace(/"/g,'&quot;')}" spellcheck="false">
+      <div class="tools">
+        <div class="zoomrow">
+          <button class="icon-btn" data-act="zout" title="Zoom out"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M5 12h14"/></svg></button>
+          <input type="range" min="1" max="4" step="0.01" value="${b.scale}">
+          <button class="icon-btn" data-act="zin" title="Zoom in"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg></button>
+        </div>
+        <div class="minirow">
+          <button class="mini" data-act="rot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a9 9 0 1 1-3-6.7L21 8"/><path d="M21 3v5h-5"/></svg>Rotate</button>
+          <button class="mini" data-act="reset"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9 9 0 0 0-6.4 2.6L3 8"/><path d="M3 3v5h5"/></svg>Reset</button>
+          <button class="mini danger" data-act="del"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m2 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg></button>
+        </div>
+      </div>`;
+
+    const stage = el.querySelector('.stage');
+    const canvas = stage.querySelector('canvas');
+    const safe = stage.querySelector('.safe');
+    const range = el.querySelector('input[type=range]');
+    const nameInput = el.querySelector('.badge-name');
+
+    // draw at device pixel ratio for crisp preview
+    function paint(){
+      const box = stage.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio||1, 3);
+      const size = Math.max(80, Math.round(box.width * dpr));
+      canvas.width = size; canvas.height = size;
+      clampOffsets(b, size);
+      drawBadge(canvas.getContext('2d'), size, b, {guides:false});
+      // position safe-area overlay
+      const facePct = faceMM / workingMM();
+      const inset = (1 - facePct)/2 * 100;
+      safe.style.left = inset+'%'; safe.style.top = inset+'%';
+      safe.style.right = inset+'%'; safe.style.bottom = inset+'%';
+      safe.style.display = bleed ? 'block' : 'none';
+    }
+    b._paint = paint;
+
+    // website curved around the outside-bottom of the circle
+    const arcHost = document.createElement('div');
+    arcHost.style.cssText = 'position:absolute;left:0;top:0;width:100%;pointer-events:none';
+    stage.appendChild(arcHost);
+    function updateArc(){
+      const s = stage.clientWidth; if(!s) return;
+      const fs = Math.max(9, s*0.05);
+      const cx = s/2, cy = s/2, R = s/2 + fs*0.9;
+      const h = cy + R + fs;
+      const id = 'pv'+(uid++);
+      arcHost.innerHTML =
+        `<svg width="${s}" height="${h}" viewBox="0 0 ${s} ${h}" xmlns="http://www.w3.org/2000/svg" style="overflow:visible;position:absolute;left:0;top:0">`+
+          `<defs><path id="${id}" d="M ${cx-R} ${cy} A ${R} ${R} 0 0 0 ${cx+R} ${cy}"/></defs>`+
+          `<text font-family="'Space Mono',monospace" font-weight="700" font-size="${fs}" fill="#7C5CF0">`+
+            `<textPath href="#${id}" startOffset="50%" text-anchor="middle">${SITE}</textPath>`+
+          `</text>`+
+        `</svg>`;
+    }
+    b._arc = updateArc;
+    requestAnimationFrame(()=>{ paint(); updateArc(); });
+
+    // zoom slider
+    range.addEventListener('input', ()=>{ b.scale = parseFloat(range.value); paint(); });
+
+    // drag to pan (pointer + pinch)
+    const pointers = new Map();
+    let pinchStart = null;
+    stage.addEventListener('pointerdown', e=>{
+      stage.setPointerCapture(e.pointerId);
+      pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+      stage.classList.add('dragging');
+      if(pointers.size===2){
+        const p=[...pointers.values()];
+        pinchStart = {dist:dist(p[0],p[1]), scale:b.scale};
+      }
+    });
+    stage.addEventListener('pointermove', e=>{
+      if(!pointers.has(e.pointerId)) return;
+      const prev = pointers.get(e.pointerId);
+      const box = stage.getBoundingClientRect();
+      if(pointers.size===1){
+        b.ox += (e.clientX - prev.x)/box.width;
+        b.oy += (e.clientY - prev.y)/box.height;
+      }
+      pointers.set(e.pointerId, {x:e.clientX, y:e.clientY});
+      if(pointers.size===2 && pinchStart){
+        const p=[...pointers.values()];
+        const ratio = dist(p[0],p[1]) / pinchStart.dist;
+        b.scale = clamp(pinchStart.scale * ratio, 1, 4);
+        range.value = b.scale;
+      }
+      paint();
+    });
+    function endPtr(e){
+      pointers.delete(e.pointerId);
+      if(pointers.size<2) pinchStart=null;
+      if(pointers.size===0) stage.classList.remove('dragging');
+    }
+    stage.addEventListener('pointerup', endPtr);
+    stage.addEventListener('pointercancel', endPtr);
+
+    // wheel zoom
+    stage.addEventListener('wheel', e=>{
+      e.preventDefault();
+      b.scale = clamp(b.scale * (1 - e.deltaY*0.0012), 1, 4);
+      range.value = b.scale; paint();
+    }, {passive:false});
+
+    // button actions
+    el.querySelectorAll('[data-act]').forEach(btn=>{
+      btn.addEventListener('click', ()=>{
+        const act = btn.dataset.act;
+        if(act==='zin'){ b.scale=clamp(b.scale*1.15,1,4); range.value=b.scale; paint(); }
+        if(act==='zout'){ b.scale=clamp(b.scale/1.15,1,4); range.value=b.scale; paint(); }
+        if(act==='rot'){ b.rot=(b.rot+90)%360; paint(); }
+        if(act==='reset'){ b.scale=1; b.ox=0; b.oy=0; b.rot=0; range.value=1; paint(); }
+        if(act==='del'){ state[i]=null; render(); }
+      });
+    });
+    nameInput.addEventListener('input', ()=>{ b.name = nameInput.value; });
+
+    return el;
+  }
+
+  const dist=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,v));
+
+  // ---------- loading files ----------
+  document.getElementById('addBtn').addEventListener('click', ()=>{ addTargetIndex=null; fileInput.click(); });
+  fileInput.addEventListener('change', ()=>{ loadFiles([...fileInput.files]); fileInput.value=''; });
+
+  function loadFiles(files){
+    files = files.filter(f=>f.type.startsWith('image/'));
+    if(!files.length) return;
+    // find empty slots (start at addTargetIndex if given)
+    let openSlots = [];
+    if(addTargetIndex!=null && state[addTargetIndex]===null) openSlots.push(addTargetIndex);
+    for(let i=0;i<SLOTS;i++){ if(state[i]===null && !openSlots.includes(i)) openSlots.push(i); }
+    addTargetIndex=null;
+
+    const toLoad = files.slice(0, openSlots.length);
+    if(files.length > openSlots.length){
+      alert(`Only ${openSlots.length} slot(s) left — this sheet holds 9 badges. Added the first ${openSlots.length}.`);
+    }
+    let done=0;
+    const finish=()=>{ done++; if(done===toLoad.length) render(); };
+    toLoad.forEach((file, k)=>{
+      const reader = new FileReader();
+      reader.onload = ()=>{
+        const img = new Image();
+        img.onload = ()=>{
+          state[openSlots[k]] = { img, scale:1, ox:0, oy:0, rot:0, name:`Badge ${openSlots[k]+1}` };
+          finish();
+        };
+        img.onerror = ()=>{ alert("Sorry — that picture couldn't be opened. Try a JPG or PNG."); finish(); };
+        img.src = reader.result;
+      };
+      reader.onerror = ()=>{ alert("Couldn't read that file. Please try another image."); finish(); };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // re-render on bleed change (affects working circle + safe overlay)
+  bleedChk.addEventListener('change', ()=>{ bleed = bleedChk.checked; render(); });
+
+  // badge size picker
+  function updateSubtitle(){ subEl.innerHTML = `Fit each picture in a true-size ${faceMM}&nbsp;mm circle, then print up to 9 on a sheet for the press.`; }
+  sizeSel.addEventListener('change', ()=>{ faceMM = parseInt(sizeSel.value, 10) || 62; updateSubtitle(); render(); });
+  updateSubtitle();
+
+  // ---------- export ----------
+  function exportCanvas(b, guides){
+    const size = mmToPx(workingMM());
+    const c = document.createElement('canvas');
+    c.width=size; c.height=size;
+    clampOffsets(b, size);
+    drawBadge(c.getContext('2d'), size, b, {guides:!!guides});
+    return c;
+  }
+
+  // ---------- print ----------
+  const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  printBtn.addEventListener('click', ()=>{
+    const mm = workingMM();
+    const urls = [];
+    state.forEach(b=>{ if(b){ urls.push(exportCanvas(b,true).toDataURL('image/png')); } });
+    if(!urls.length) return;
+
+    // each cell = badge circle (true mm) + website curved around the outside bottom
+    const fs = Math.max(2.6, mm*0.05);
+    const R  = mm/2 + fs*0.9;
+    const W  = mm + 2;                 // badge is the widest part
+    const cx = W/2, cy = mm/2 + 1;
+    const H  = cy + R + fs*0.8 + 1;
+    const arc = `M ${cx-R} ${cy} A ${R} ${R} 0 0 0 ${cx+R} ${cy}`;
+
+    const cellSvg = (url,k) =>
+      `<svg width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`+
+        `<defs>`+
+          `<clipPath id="c${k}"><circle cx="${cx}" cy="${cy}" r="${mm/2}"/></clipPath>`+
+          `<path id="p${k}" d="${arc}"/>`+
+        `</defs>`+
+        `<image href="${url}" xlink:href="${url}" x="${cx-mm/2}" y="${cy-mm/2}" width="${mm}" height="${mm}" clip-path="url(#c${k})" preserveAspectRatio="xMidYMid slice"/>`+
+        `<text font-family="monospace" font-weight="700" font-size="${fs}" fill="#333">`+
+          `<textPath href="#p${k}" xlink:href="#p${k}" startOffset="50%" text-anchor="middle">${escapeHtml(SITE)}</textPath>`+
+        `</text>`+
+      `</svg>`;
+
+    const pageMargin = 5, gap = 3;
+    const usableW = 210 - pageMargin*2;
+    const usableH = 297 - pageMargin*2;
+    let cols = Math.floor((usableW + gap) / (W + gap));
+    cols = Math.max(1, Math.min(cols, 3, urls.length));
+    const rows = Math.ceil(urls.length / cols);
+    const rowsPerPage = Math.max(1, Math.floor((usableH + gap) / (H + gap)));
+    const pages = Math.ceil(rows / rowsPerPage);
+
+    const note = pages <= 1
+      ? `${urls.length} badge${urls.length>1?'s':''} at ${faceMM} mm · ${cols} per row · fits on one A4 sheet ✓`
+      : `${urls.length} badges at ${faceMM} mm · ${cols} per row · needs ${pages} A4 sheets${bleed ? ' — turn off "Print border" to fit more per sheet' : ''}`;
+
+    const cells = urls.map((u,k)=>cellSvg(u,k)).join('');
+
+    const html = `<!doctype html><html><head><meta charset="utf-8"><title>Badge sheet — print</title>
+<style>
+  @page{size:A4;margin:${pageMargin}mm}
+  body{margin:0;font-family:system-ui,sans-serif;color:#222}
+  .bar{padding:12px 16px;background:#2E2451;color:#fff;font-size:14px;line-height:1.4}
+  .bar button{font:inherit;font-weight:700;background:#F8C53A;color:#2E2451;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;margin-right:10px}
+  .sheet{display:grid;grid-template-columns:repeat(${cols}, ${W}mm);gap:${gap}mm;justify-content:center;align-content:flex-start;padding-top:6mm}
+  .sheet svg{display:block;break-inside:avoid}
+  @media print{ .bar{display:none} .sheet{padding-top:0} }
+</style></head>
+<body>
+  <div class="bar">
+    <button onclick="window.print()">Print this sheet</button>
+    ${note}. In the print dialog set <b>Scale 100%</b> and <b>Margins: None</b> for true size.
+  </div>
+  <div class="sheet">${cells}</div>
+  <script>window.addEventListener('load',function(){setTimeout(function(){try{window.print();}catch(e){}},500);});<\/script>
+</body></html>`;
+
+    const w = window.open('', '_blank');
+    if(!w){
+      alert("Couldn't open the print page. Allow pop-ups for this site, then try Print sheet again.");
+      return;
+    }
+    w.document.open(); w.document.write(html); w.document.close();
+  });
+
+  // repaint previews on resize
+  let raf;
+  window.addEventListener('resize', ()=>{
+    cancelAnimationFrame(raf);
+    raf = requestAnimationFrame(()=>{ state.forEach(b=>{ if(b){ b._paint&&b._paint(); b._arc&&b._arc(); } }); });
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>

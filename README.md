@@ -27,3 +27,5 @@ Photos upload to ImgBB on submit (`assets/js/reviews-imgbb-config.js`).
 3. Open the bookmark URL, then **Approve review** → log in — the form becomes publish mode.
 4. Paste name, review, and photo URL (or attach a file), then **Publish review**.
 5. **Delete** on a published card removes it from the site.
+
+The badge maker is at [/badges](https://arnistartup.com/badges).
