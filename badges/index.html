@@ -74,15 +74,24 @@
   .sheet-label h2{font-family:"Fredoka One",cursive;font-weight:400;font-size:17px;margin:0}
   .sheet-label .hint{font-size:13px;color:var(--ink-soft);font-weight:600}
   .grid{
-    display:grid;grid-template-columns:repeat(3,1fr);gap:16px;
+    display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:48px 36px;
+    overflow:visible;
   }
-  @media(max-width:720px){ .grid{grid-template-columns:repeat(2,1fr)} }
-  @media(max-width:440px){ .grid{grid-template-columns:1fr} }
+  .grid.is-large{
+    grid-template-columns:repeat(2,minmax(0,1fr));
+    gap:56px 40px;
+  }
+  @media(max-width:720px){
+    .grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:40px 28px}
+  }
+  @media(max-width:440px){
+    .grid{grid-template-columns:1fr;gap:36px}
+  }
 
   .slot{
     background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
-    padding:14px;box-shadow:var(--shadow);position:relative;
-    display:flex;flex-direction:column;align-items:center;
+    padding:18px 18px 16px;box-shadow:var(--shadow);position:relative;
+    display:flex;flex-direction:column;align-items:center;overflow:visible;
   }
   .slot .tag{
     position:absolute;top:10px;left:12px;font-family:"Space Mono",monospace;
@@ -107,7 +116,7 @@
   /* Filled slot */
   .stage{
     width:100%;aspect-ratio:1;position:relative;touch-action:none;cursor:grab;
-    border-radius:50%;
+    border-radius:50%;overflow:visible;margin-bottom:18%;
   }
   .stage.dragging{cursor:grabbing}
   .stage canvas{display:block;width:100%;height:100%;border-radius:50%}
@@ -120,7 +129,7 @@
     filter:drop-shadow(0 0 1px rgba(0,0,0,.45));
   }
   .badge-name{
-    margin-top:24px;width:100%;text-align:center;font-family:"Fredoka One",cursive;
+    margin-top:4px;width:100%;text-align:center;font-family:"Fredoka One",cursive;
     font-weight:400;font-size:14px;color:var(--ink);
     border:none;background:transparent;padding:2px;border-radius:6px;
   }
@@ -189,7 +198,7 @@
   <div class="catalog-inner maker">
     <span class="section-label">Ready to print</span>
     <h1 class="section-title">Turn photos into badges ✨</h1>
-    <p class="catalog-intro">Fit each picture in a true-size 62&nbsp;mm circle, then print up to 9 on a sheet for the press.</p>
+    <p class="catalog-intro">Fit each picture in a true-size 62&nbsp;mm circle, then print up to 6 on a sheet for the press.</p>
 
     <div class="toolbar">
       <button class="btn btn-primary" id="addBtn">
@@ -210,7 +219,7 @@
         Print border (bleed)
       </label>
       <div class="spacer"></div>
-      <span class="count"><b id="used">0</b> / 9 badges</span>
+      <span class="count"><b id="used">0</b> / <span id="slotMax">6</span> badges</span>
       <button class="btn btn-ghost" id="printBtn" disabled>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V3h12v6M6 18H4a2 2 0 0 1-2-2v-4a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v4a2 2 0 0 1-2 2h-2M6 14h12v7H6z"/></svg>
         Print sheet
@@ -319,12 +328,19 @@
   const grid = document.getElementById('grid');
   const fileInput = document.getElementById('fileInput');
   const usedEl = document.getElementById('used');
+  const slotMaxEl = document.getElementById('slotMax');
   const printBtn = document.getElementById('printBtn');
   const bleedChk = document.getElementById('bleedChk');
   const sizeSel = document.getElementById('sizeSel');
   const subEl = document.querySelector('.catalog-intro');
 
   function workingMM(){ return bleed ? (faceMM + BLEED_MM*2) : faceMM; }
+  function slotCount(){
+    if (faceMM === 75) return 4;
+    if (faceMM === 62) return 6;
+    if (faceMM === 58) return 8;
+    return SLOTS;
+  }
 
   // ---------- rendering a badge onto a canvas ----------
   // badge: {img, scale(1..4), ox, oy (fraction of diameter), rot(deg)}
@@ -385,16 +401,18 @@
     b.oy = Math.max(-maxY, Math.min(maxY, b.oy));
   }
 
-  // ---------- build the 9 slots ----------
   function render(){
+    const count = slotCount();
     grid.innerHTML = "";
+    grid.classList.toggle('is-large', count === 4);
     let used = 0;
-    for(let i=0;i<SLOTS;i++){
+    for(let i=0;i<count;i++){
       const b = state[i];
       if(b) used++;
       grid.appendChild(b ? filledSlot(i,b) : emptySlot(i));
     }
     usedEl.textContent = used;
+    slotMaxEl.textContent = count;
     printBtn.disabled = used === 0;
   }
 
@@ -474,7 +492,7 @@
     function updateArc(){
       const s = stage.clientWidth; if(!s) return;
       const fs = Math.max(9, s*0.05);
-      const cx = s/2, cy = s/2, R = s/2 + fs*0.9;
+      const cx = s/2, cy = s/2, R = s/2 + fs*1.45;
       const h = cy + R + fs;
       const id = 'pv'+(uid++);
       arcHost.innerHTML =
@@ -563,13 +581,14 @@
     if(!files.length) return;
     // find empty slots (start at addTargetIndex if given)
     let openSlots = [];
-    if(addTargetIndex!=null && state[addTargetIndex]===null) openSlots.push(addTargetIndex);
-    for(let i=0;i<SLOTS;i++){ if(state[i]===null && !openSlots.includes(i)) openSlots.push(i); }
+    const count = slotCount();
+    if(addTargetIndex!=null && addTargetIndex<count && state[addTargetIndex]===null) openSlots.push(addTargetIndex);
+    for(let i=0;i<count;i++){ if(state[i]===null && !openSlots.includes(i)) openSlots.push(i); }
     addTargetIndex=null;
 
     const toLoad = files.slice(0, openSlots.length);
     if(files.length > openSlots.length){
-      alert(`Only ${openSlots.length} slot(s) left — this sheet holds 9 badges. Added the first ${openSlots.length}.`);
+      alert(`Only ${openSlots.length} slot(s) left — this sheet holds ${count} badges. Added the first ${openSlots.length}.`);
     }
     let done=0;
     const finish=()=>{ done++; if(done===toLoad.length) render(); };
@@ -593,7 +612,7 @@
   bleedChk.addEventListener('change', ()=>{ bleed = bleedChk.checked; render(); });
 
   // badge size picker
-  function updateSubtitle(){ subEl.innerHTML = `Fit each picture in a true-size ${faceMM}&nbsp;mm circle, then print up to 9 on a sheet for the press.`; }
+  function updateSubtitle(){ subEl.innerHTML = `Fit each picture in a true-size ${faceMM}&nbsp;mm circle, then print up to ${slotCount()} on a sheet for the press.`; }
   sizeSel.addEventListener('change', ()=>{ faceMM = parseInt(sizeSel.value, 10) || 62; updateSubtitle(); render(); });
   updateSubtitle();
 
@@ -610,19 +629,85 @@
   // ---------- print ----------
   const escapeHtml = s => String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
+  // Paper around each circle, plus the curved site name, so a cut stays off the badge.
+  // Eight badges (58 mm) use a tighter four-row sheet; anything else keeps the wider gaps.
+  function sheetPlan(mm, count){
+    const fs = Math.max(2.4, mm * 0.045);
+    const labelGap = fs * 1.45;
+    const plan = { cols: Math.min(2, count) };
+
+    function fits(){
+      const cellW = mm + plan.padX * 2;
+      const cellH = mm + plan.padTop + plan.padBottom;
+      const needW = plan.cols * cellW + Math.max(0, plan.cols - 1) * plan.colGap + plan.pageMargin * 2;
+      const needH = plan.rowsPerPage * cellH + Math.max(0, plan.rowsPerPage - 1) * plan.rowGap + plan.pageMargin * 2;
+      return needW <= 210 && needH <= 297;
+    }
+    function relax(minGap){
+      while ((plan.colGap > minGap || plan.rowGap > minGap) && !fits()) {
+        plan.colGap = Math.max(minGap, plan.colGap - 1);
+        plan.rowGap = plan.colGap;
+      }
+      while (plan.rowsPerPage > 1 && !fits()) plan.rowsPerPage -= 1;
+    }
+    function roomy(){
+      plan.padX = 5 + labelGap;
+      plan.padTop = 5;
+      plan.padBottom = 5 + labelGap + fs * 0.35;
+      plan.pageMargin = 10;
+      plan.colGap = 12;
+      plan.rowGap = 12;
+      plan.rowsPerPage = 3;
+      relax(6);
+      if (!fits() && plan.cols > 1) {
+        plan.pageMargin = 6;
+        plan.colGap = 8;
+        plan.rowGap = 8;
+        plan.rowsPerPage = 3;
+        relax(4);
+      }
+      if (!fits() && plan.cols > 1) {
+        plan.cols = 1;
+        plan.colGap = 12;
+        plan.rowGap = 12;
+        plan.rowsPerPage = 3;
+        relax(6);
+      }
+    }
+
+    const wantRows = Math.ceil(count / plan.cols);
+    if (wantRows > 3 && plan.cols > 1) {
+      plan.padX = 4;
+      plan.padTop = 4;
+      plan.padBottom = labelGap + fs * 0.35 + 1.5;
+      plan.pageMargin = 5;
+      plan.colGap = 12;
+      plan.rowGap = 3;
+      plan.rowsPerPage = wantRows;
+      if (!fits()) roomy();
+    } else {
+      roomy();
+    }
+
+    const R = mm / 2 + labelGap;
+    plan.fs = fs;
+    plan.W = mm + plan.padX * 2;
+    plan.H = mm + plan.padTop + plan.padBottom;
+    plan.cx = plan.W / 2;
+    plan.cy = plan.padTop + mm / 2;
+    plan.arc = `M ${plan.cx - R} ${plan.cy} A ${R} ${R} 0 0 0 ${plan.cx + R} ${plan.cy}`;
+    plan.rows = Math.ceil(count / plan.cols);
+    plan.pages = Math.ceil(plan.rows / plan.rowsPerPage);
+    return plan;
+  }
+
   printBtn.addEventListener('click', ()=>{
     const mm = workingMM();
     const urls = [];
-    state.forEach(b=>{ if(b){ urls.push(exportCanvas(b,true).toDataURL('image/png')); } });
+    state.slice(0, slotCount()).forEach(b=>{ if(b){ urls.push(exportCanvas(b,true).toDataURL('image/png')); } });
     if(!urls.length) return;
 
-    // each cell = badge circle (true mm) + website curved around the outside bottom
-    const fs = Math.max(2.6, mm*0.05);
-    const R  = mm/2 + fs*0.9;
-    const W  = mm + 2;                 // badge is the widest part
-    const cx = W/2, cy = mm/2 + 1;
-    const H  = cy + R + fs*0.8 + 1;
-    const arc = `M ${cx-R} ${cy} A ${R} ${R} 0 0 0 ${cx+R} ${cy}`;
+    const { fs, W, H, cx, cy, arc, cols, colGap, rowGap, pageMargin, pages } = sheetPlan(mm, urls.length);
 
     const cellSvg = (url,k) =>
       `<svg width="${W}mm" height="${H}mm" viewBox="0 0 ${W} ${H}" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">`+
@@ -636,15 +721,6 @@
         `</text>`+
       `</svg>`;
 
-    const pageMargin = 5, gap = 3;
-    const usableW = 210 - pageMargin*2;
-    const usableH = 297 - pageMargin*2;
-    let cols = Math.floor((usableW + gap) / (W + gap));
-    cols = Math.max(1, Math.min(cols, 3, urls.length));
-    const rows = Math.ceil(urls.length / cols);
-    const rowsPerPage = Math.max(1, Math.floor((usableH + gap) / (H + gap)));
-    const pages = Math.ceil(rows / rowsPerPage);
-
     const note = pages <= 1
       ? `${urls.length} badge${urls.length>1?'s':''} at ${faceMM} mm · ${cols} per row · fits on one A4 sheet ✓`
       : `${urls.length} badges at ${faceMM} mm · ${cols} per row · needs ${pages} A4 sheets${bleed ? ' — turn off "Print border" to fit more per sheet' : ''}`;
@@ -657,7 +733,7 @@
   body{margin:0;font-family:system-ui,sans-serif;color:#222}
   .bar{padding:12px 16px;background:#2E2451;color:#fff;font-size:14px;line-height:1.4}
   .bar button{font:inherit;font-weight:700;background:#F8C53A;color:#2E2451;border:none;border-radius:8px;padding:8px 16px;cursor:pointer;margin-right:10px}
-  .sheet{display:grid;grid-template-columns:repeat(${cols}, ${W}mm);gap:${gap}mm;justify-content:center;align-content:flex-start;padding-top:6mm}
+  .sheet{display:grid;grid-template-columns:repeat(${cols}, ${W}mm);column-gap:${colGap}mm;row-gap:${rowGap}mm;justify-content:center;align-content:flex-start;padding-top:6mm}
   .sheet svg{display:block;break-inside:avoid}
   @media print{ .bar{display:none} .sheet{padding-top:0} }
 </style></head>
